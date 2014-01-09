@@ -2,7 +2,7 @@
 <assembly>
     <selection id="flowSelection" title="Oznaczenia Flow"/>
     <selection id="abdomenSelection" title="Oznaczenia Abdomen"/>
-    <serie title="Flow" source="Wilk, Tadeusz_Flow_PDS_.txt" color="#ffcc33" alpha="1">
+    <serie title="Flow" source="Osoba_Flow_PDS_.txt" color="#ffcc33" alpha="1">
         <selection>flowSelection</selection>
         <overlay  source="dane_na_wykres_flow.txt">
             <line name="analiza 1"        color="#4512de" alpha=".8"/>
@@ -14,14 +14,14 @@
             <mask name="obszary ważne"    color="#999999" alpha=".8" importToSelection="flowSelection"/>   
         </overlay>
     </serie>
-    <serie title="Abdomen" source="Wilk, Tadeusz_Abdomen_PDS_.txt" color="#aa9928" alpha="1">
+    <serie title="Abdomen" source="Osoba_Abdomen_PDS_.txt" color="#aa9928" alpha="1">
         <selection>abdomenSelection</selection>
     </serie>
-    <serie title="Nasal" source="Wilk, Tadeusz_Nasal_PDS_.txt" color="#aa55aa" alpha="1"/>
-    <serie title="Pleth" source="Wilk, Tadeusz_RD-Pleth_PDS_.txt" color="#008866" alpha="1">
+    <serie title="Nasal" source="Osoba_Nasal_PDS_.txt" color="#aa55aa" alpha="1"/>
+    <serie title="Pleth" source="Osoba_RD-Pleth_PDS_.txt" color="#008866" alpha="1">
     </serie>
-    <serie title="SpO2" source="Wilk, Tadeusz_SpO2_PDS_.txt" color="#0000cc" alpha="1">
+    <serie title="SpO2" source="Osoba_SpO2_PDS_.txt" color="#0000cc" alpha="1">
     </serie>
-    <serie title="Thorax" source="Wilk, Tadeusz_Thorax_PDS_.txt" color="#1487bb" alpha="1">
+    <serie title="Thorax" source="Osoba_Thorax_PDS_.txt" color="#1487bb" alpha="1">
     </serie>
 </assembly>
