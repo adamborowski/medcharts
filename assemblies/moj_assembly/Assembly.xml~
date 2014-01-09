@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+    <selection id="mainMask" title="Główne obszary diagnostyczne"/>
+    <selection id="helpMask" title="pomocnicze obszary diagnostyczne"/>
+    <serie title="Flow" source="Wilk, Tadeusz_Flow_PDS_.txt" color="#ffcc33" alpha="1">
+        <selection>mainMask</selection>
+        <overlay  source="dane_na_wykres_flow.txt">
+            <line name="analiza 1"        color="#4512de" alpha=".8"/>
+            <line name="analiza 2"        color="#cc0000" alpha=".8"/>
+            <mask name="obszary ważne"    color="#454545" alpha=".4"/>
+        </overlay>
+    </serie>
+    <serie title="Abdomen" source="Wilk, Tadeusz_Abdomen_PDS_.txt" color="#aa9928" alpha="1">
+    </serie>
+    <serie title="Nasal" source="Wilk, Tadeusz_Nasal_PDS_.txt" color="#aa55aa" alpha="1"/>
+    <serie title="Pleth" source="Wilk, Tadeusz_RD-Pleth_PDS_.txt" color="#008866" alpha="1">
+        <intervals>
+            <interval>13</interval>
+            <interval>13</interval>
+            <interval>14</interval>
+        </intervals>
+    </serie>
+    <serie title="SpO2" source="Wilk, Tadeusz_SpO2_PDS_.txt" color="#0000cc" alpha="1">
+    </serie>
+    <serie title="Kasia" source="Wilk, Tadeusz_Thorax_PDS_.txt" color="#1487bb" alpha="1">
+    </serie>
+</assembly>

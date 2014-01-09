@@ -1,1 +1,1 @@
-java -jar dist/MedCharts.jar
+java -jar program/dist/MedCharts.jar

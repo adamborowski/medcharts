@@ -1,0 +1,55 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="assembly">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="serie" maxOccurs="unbounded" minOccurs="1">
+          <xs:annotation>
+            <xs:documentation>jedna seria danych posiada główny wykres, który wyznacza interval i offset  w poniższych nie będzie możliwości zaznaczania, gdyż serie nie posiada elementu mask</xs:documentation>
+          </xs:annotation>
+          <xs:complexType mixed="true">
+            <xs:sequence>
+              <xs:element name="overlay" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>można dodawać nakładki na główny wykres, muszą być w formacie kolumn wamych wartości</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="column" maxOccurs="unbounded" minOccurs="1">
+                      <xs:complexType>
+                        <xs:simpleContent>
+                          <xs:extension base="xs:string">
+                            <xs:attribute type="xs:string" name="name" use="required"/>
+                            <xs:attribute type="xs:string" name="type" use="optional" default="line"/>
+                            <xs:attribute type="xs:string" name="color" use="optional" default="#666666"/>
+                            <xs:attribute type="xs:float" name="alpha" use="optional" default="1"/>
+                          </xs:extension>
+                        </xs:simpleContent>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" name="source"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="mask" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>opcjonalnie, można nadać maskę serii danych  opcjonalnie, można nadać maskę serii danych, może być już użyta wcześniej, wtedy będą maski zsynchronizowane w widokach</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="source" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="title" use="optional"/>
+            <xs:attribute type="xs:string" name="source" use="optional"/>
+            <xs:attribute type="xs:string" name="color" use="optional" default="#cc55ff"/>
+            <xs:attribute type="xs:float" name="alpha" use="optional" default="1"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
