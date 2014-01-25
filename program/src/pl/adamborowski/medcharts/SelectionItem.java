@@ -27,7 +27,7 @@ public class SelectionItem implements Comparable<SelectionItem>, IRange<Long>, S
     transient private boolean selected;
     long start;
     long end;
-    final boolean ENABLE_TRACE = false;
+    final transient boolean ENABLE_TRACE = false;
 
     public SelectionItem(SelectionController selectionController)
     {

@@ -64,7 +64,6 @@ public static final float MIN_SCALE_X=0.031118091f;
      */
     public void setScaleX(float scaleX)
     {
-        
         if (scaleX < MIN_SCALE_X)
         {
             scaleX=MIN_SCALE_X;

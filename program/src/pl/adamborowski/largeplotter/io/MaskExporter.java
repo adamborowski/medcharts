@@ -16,7 +16,6 @@ import pl.adamborowski.medcharts.assembly.data.DataSequence;
 import pl.adamborowski.medcharts.assembly.reading.IDataReader;
 import pl.adamborowski.utils.DateUtil;
 import pl.adamborowski.utils.interfaces.IProgressListener;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *

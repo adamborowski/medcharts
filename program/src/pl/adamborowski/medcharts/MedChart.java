@@ -307,7 +307,8 @@ public class MedChart extends JPanel implements IImportListener<Mapping>, Action
         timer = new Timer(70, this);
         timer.setRepeats(false);
         timer.start(); // z opóźnieniem włączamy ekran z paskiem postępu.
-        importer.setForceDelete(false);
+//        importer.setForceDelete(false);//todo change to false
+        importer.setForceDelete(true);//todo change to false
         importer.execute();
     }
     Timer timer;
@@ -406,6 +407,7 @@ public class MedChart extends JPanel implements IImportListener<Mapping>, Action
     @Override
     public void error(Exception ex)
     {
+        ex.printStackTrace();
         JOptionPane.showMessageDialog(this, ex.getMessage(), "Problem z importowaniem", JOptionPane.ERROR_MESSAGE);
     }
 
