@@ -50,8 +50,8 @@ public abstract class AggregationImporter {
     String name;
 
     private void parseRange(String range) {
-        Pattern reg = Pattern.compile("(\\d+)(s|m|h)+?");
-        name=range;
+        Pattern reg = Pattern.compile("(\\d+)(ms|s|m|h)+?");
+        name = range;
         Matcher m = reg.matcher(range);
         final int second = 1000, minute = 60 * second, hour = 60 * minute;
         int num;
@@ -63,6 +63,9 @@ public abstract class AggregationImporter {
             switch (unit) {
                 case "s":
                     num *= second;
+                    break;
+                case "ms":
+                    num *= 1;
                     break;
                 case "m":
                     num *= minute;
@@ -90,6 +93,9 @@ public abstract class AggregationImporter {
         }
 
         flushStep = (float) range / sequence.getSequenceLength() * sequence.getSequenceCount();
+        if (flushStep <1) {
+            flushStep = 1;
+        }
         System.out.println("numprobesperaggr " + flushStep);
     }
     int counter = 0;
@@ -117,7 +123,7 @@ public abstract class AggregationImporter {
 
         public Object getAggregation(int index) {
 //            System.out.println("aggregation get ratio:// sample: " + sample + " data i: " + (sample / samplesPerAggregation) + " data ength:" + data.length);
-            return data[(int) (index )];
+            return data[(int) (index)];
         }
 
         public boolean isEmpty() {
@@ -134,7 +140,7 @@ public abstract class AggregationImporter {
         dp.range = range;
         dp.samplesPerAggregation = flushStep;
         dp.data = getResult();
-        dp.name=name;
+        dp.name = name;
         return dp;
     }
 

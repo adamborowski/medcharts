@@ -4,13 +4,14 @@
  */
 package pl.adamborowski.medcharts.assembly.data;
 
+import java.io.Serializable;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
  * @author test
  */
-final public class DataSequence
+final public class DataSequence implements Serializable
 {
 
     final private int x;//ile razy powtarzający się interwał

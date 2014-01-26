@@ -62,7 +62,7 @@ public class MinMaxImporter extends AggregationImporter {
     public void flush() {
         data.add(new MinMax(min, max));
         min = Float.MAX_VALUE;
-        max = Float.MIN_VALUE;
+        max = -Float.MAX_VALUE;
     }
 
 }

@@ -94,6 +94,9 @@ public class MainReader implements IDataReader<DataCollection> {
         sequence = new DataSequence(x, a, b, start);
         numProbes = (int) ((raf.length() - raf.getFilePointer()) / FRAME_BYTES_Y);
         end = sequence.toTime(numProbes - 1);
+        //
+        AggregationImporter.DataProvider noAggregation = aggregations.get(aggregations.size()-1);
+        noAggregation.range = sequence.getSequenceLength();//zapewnij dobry dobór dla tych próbek przy automatycznym dostosowaniu
     }
 
     @Override
@@ -123,24 +126,31 @@ public class MainReader implements IDataReader<DataCollection> {
         //prostymi, dla małego będzie to uśrednianie/maxymalizacja z sąsiednich próbek
         readProbe_probeIndex = moveTo(x);
         int probeIndex = sequence.toProbeIndex(x);
-        float tmp = raf.readFloat();
+
         if (aggregations.isEmpty()) {
+            float tmp = raf.readFloat();
             return tmp;
         }
-        AggregationImporter.DataProvider currentAggregation = null;
+        AggregationImporter.DataProvider currentAggregation = aggregations.get(aggregations.size() - 1);
         //idziemy od najbardziej szczegółowej agregacji do ogólnej i dopóki range mieści się w maxRange (1/scaleX) to doputy dobieramy skalę
         float minRange = (scale);
-        if (minRange < aggregations.get(aggregations.size() - 1).range) {
-            return tmp;
-        }
-
+//        if (minRange < aggregations.get(aggregations.size() - 1).range) {
+//        System.out.println("tmp");
+//            return tmp;
+//        }
         for (AggregationImporter.DataProvider a : aggregations) {
             if (a.range < minRange) {
                 break;
             }
             currentAggregation = a;
         }
-        final int aggregationIndex = (int) (probeIndex / (currentAggregation.range / sequence.getSequenceLength() * sequence.getSequenceCount()));
+        System.out.println("a: " + currentAggregation.name);
+        final int aggregationIndex;
+        if (currentAggregation.name.equals("1ms")) {
+            aggregationIndex = probeIndex;
+        } else {
+            aggregationIndex = (int) (probeIndex / (currentAggregation.range / sequence.getSequenceLength() * sequence.getSequenceCount()));
+        }
         return ((MinMaxImporter.MinMax) currentAggregation.getAggregation(aggregationIndex)).max;
 
     }
