@@ -21,26 +21,18 @@ public abstract class AggregationImporter {
     public static AggregationImporter create(Assembly.Serie.Aggregations.Aggregation aggregation) {
         Type type = Type.valueOf(aggregation.getType());
         switch (type) {
-            case minmax:
+            case MIN:
                 return new MinMaxImporter(aggregation);
-            case average:
-                break;
-            case min:
-                break;
-            case max:
-                break;
             default:
                 throw new AssertionError(type.name());
-
         }
-        throw new RuntimeException("trzeba podać dobry typ agregacji");
     }
     private int fromScale;
     protected float flushStep;
 
     public enum Type {
 
-        minmax, average, min, max
+        MIN, MAX, AVG, ACT, MED
     };
     /**
      * in milliseconds, number of msc per pixel

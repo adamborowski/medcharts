@@ -6,10 +6,19 @@
 
 package pl.adamborowski.medcharts.data.aggregationimporter;
 
+import pl.adamborowski.medcharts.assembly.imporing.CacheFileManager;
+import pl.adamborowski.medcharts.data.AggregationDescription;
+import pl.adamborowski.medcharts.data.AggregationImporter;
+
 /**
  *
  * @author adam
  */
-public class MinImporter {
+public class MinImporter extends AggregationImporter
+{
+
+    public MinImporter(AggregationDescription ad, CacheFileManager cacheFileManager) {
+        super(ad, cacheFileManager);
+    }
     
 }

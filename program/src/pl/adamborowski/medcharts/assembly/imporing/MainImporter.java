@@ -7,9 +7,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import pl.adamborowski.medcharts.assembly.data.DataSequence;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
 import pl.adamborowski.medcharts.assembly.reading.MainReader;
+import pl.adamborowski.medcharts.data.AggregationDescription;
+import pl.adamborowski.medcharts.data.SerieImporter;
+import pl.adamborowski.utils.ParseUtil;
 import sun.misc.FloatingDecimal;
 
 /*
@@ -24,43 +28,44 @@ import sun.misc.FloatingDecimal;
  * @author test
  */
 public final class MainImporter extends ImporterBase<MainReader> {
-    
+
     @Override
     protected boolean isCacheValidImpl() {
-        return hasValidBinary(sourceFile, "") && hasValidBinaryObjectStream(sourceFile, ".aggregations"); //To change body of generated methods, choose Tools | Templates.
+        return false;// this is not used because serie importer is null while super().
     }
-    
+
     public static final int MAX_SEQUENCE_SIZE = 10;
+    public final SerieImporter serieImporter;
     private final Assembly.Serie serie;
-    private final ArrayList<AggregationImporter> aggregationImporters;
-    
+
     public MainImporter(AssemblyImporter importer, Assembly.Serie serie) throws IOException {
         super(importer, importer.getSourceFile(serie.getSource()));
         setReader(new MainReader(this));
         this.serie = serie;
+        this.serieImporter = new SerieImporter(cacheFileManager);
         if (serie.getAggregations() != null) {
-            aggregationImporters = new ArrayList<>(serie.getAggregations().getAggregation().size());
             for (Assembly.Serie.Aggregations.Aggregation aggregation : serie.getAggregations().getAggregation()) {
-                aggregationImporters.add(AggregationImporter.create(aggregation));
+                List<AggregationDescription.Type> types = ParseUtil.parseTypes(aggregation.getType());
+                for (AggregationDescription.Type type : types) {
+                    serieImporter.addAggregation(new AggregationDescription(type.name() + aggregation.getRange(), type, ParseUtil.parseRange(aggregation.getRange())));
+
+                }
             }
-        } else {
-            aggregationImporters = new ArrayList<>();
         }
-        
+        isCacheValid = serieImporter.isCacheValid();
     }
     ///////////////////////
     final private int NUM_ILLEGAL_LINES = 5;
     private DataSequence sequence;
     DateFormat df = new SimpleDateFormat("HH:mm:ss:SSSS");
-    
+
     @Override
     protected void importImpl() throws IOException, ParseException {
         RandomAccessFile raf = createBinary(sourceFile, ""); //tworzymy nowy plik binarny
-        ObjectOutputStream aggregationOutputStream = createBinaryObjectStream(sourceFile, ".aggregations");
         long beginPos = raf.getFilePointer();
         String line;
         String[] splitted;
-        
+
         for (int i = 0; i < NUM_ILLEGAL_LINES; i++) {
             sourceStream.readLine();
         }
@@ -68,11 +73,8 @@ public final class MainImporter extends ImporterBase<MainReader> {
         long maxModuleFilePos;
         float currentValue;
         ArrayList<Float> values = checkSequence();
+        serieImporter.begin(sequence);
         //przygotuj agregacje
-        for (AggregationImporter a : aggregationImporters) {
-            a.init(sequence, (int) numSourceLines);
-        }
-        System.out.println(aggregationImporters);
         //zapisz sekwencję do pliku
         raf.writeInt(sequence.getX());
         raf.writeInt(sequence.getA());
@@ -89,9 +91,7 @@ public final class MainImporter extends ImporterBase<MainReader> {
         for (Float testValue : values) {
             raf.writeFloat(testValue);
             maxModule = Math.max(maxModule, Math.abs(testValue));
-            for (AggregationImporter a : aggregationImporters) {
-                a.process(testValue);
-            }
+            serieImporter.process(testValue);
         }
         //zapisz pozostałe próbki w wielkiej pętli
         long currentLine = values.size();
@@ -102,13 +102,11 @@ public final class MainImporter extends ImporterBase<MainReader> {
             } catch (NumberFormatException ex) {
                 currentValue = Float.NaN;
             }
-            
+
             raf.writeFloat(currentValue);
-            
-            for (AggregationImporter a : aggregationImporters) {
-                a.process(currentValue);
-            }
-            
+
+            serieImporter.process(currentValue);
+
             setLineProgress(++currentLine);
         }
         //zapisz maksymalny moduł wartości
@@ -130,13 +128,7 @@ public final class MainImporter extends ImporterBase<MainReader> {
         }
         raf.seek(raf.length() - MainReader.FRAME_BYTES_Y);
         System.out.println("last i: " + raf.readFloat());;
-        ArrayList<AggregationImporter.DataProvider> aggrgationDataProviders = new ArrayList<>();
-        for (AggregationImporter a : aggregationImporters) {
-            aggrgationDataProviders.add(a.getDataProvider());
-        }
-        aggregationOutputStream.writeObject(aggrgationDataProviders);
         System.out.println("KONIEC");
-        aggregationOutputStream.close();
     }
 
     /**
@@ -182,15 +174,15 @@ public final class MainImporter extends ImporterBase<MainReader> {
                 break;
             }
         }
-        
+
         sequence = new DataSequence(x, a, b, firstTime);
-        
+
         return values;
     }
     private float readValue_value;
     private long readValue_date;
     private String[] splitted;
-    
+
     private void readValue(String line) throws ParseException {
         splitted = line.split("\t");
         readValue_date = df.parse(splitted[0]).getTime();

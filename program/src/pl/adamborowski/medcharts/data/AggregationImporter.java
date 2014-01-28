@@ -3,12 +3,17 @@
  */
 package pl.adamborowski.medcharts.data;
 
-import pl.adamborowski.medcharts.data.AggregationDescription.AggregationType;
-import static pl.adamborowski.medcharts.data.AggregationDescription.AggregationType.ACT;
-import static pl.adamborowski.medcharts.data.AggregationDescription.AggregationType.AVG;
-import static pl.adamborowski.medcharts.data.AggregationDescription.AggregationType.MAX;
-import static pl.adamborowski.medcharts.data.AggregationDescription.AggregationType.MED;
-import static pl.adamborowski.medcharts.data.AggregationDescription.AggregationType.MIN;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import pl.adamborowski.medcharts.assembly.data.DataSequence;
+import pl.adamborowski.medcharts.assembly.imporing.CacheFileManager;
+import static pl.adamborowski.medcharts.data.AggregationDescription.Type.ACT;
+import static pl.adamborowski.medcharts.data.AggregationDescription.Type.AVG;
+import static pl.adamborowski.medcharts.data.AggregationDescription.Type.MAX;
+import static pl.adamborowski.medcharts.data.AggregationDescription.Type.MED;
+import static pl.adamborowski.medcharts.data.AggregationDescription.Type.MIN;
+import pl.adamborowski.medcharts.data.aggregationimporter.MaxImporter;
+import pl.adamborowski.medcharts.data.aggregationimporter.MinImporter;
 
 /**
  *
@@ -16,12 +21,21 @@ import static pl.adamborowski.medcharts.data.AggregationDescription.AggregationT
  */
 public class AggregationImporter {
 
-    public static AggregationImporter create(AggregationType type) {
-        switch (type) {
+    protected final AggregationDescription ad;
+    protected final CacheFileManager cacheFileManager;
+    private ObjectOutputStream output;
+
+    public AggregationImporter(AggregationDescription ad, CacheFileManager cacheFileManager) {
+        this.ad = ad;
+        this.cacheFileManager = cacheFileManager;
+    }
+
+    public static AggregationImporter create(AggregationDescription ad, CacheFileManager cacheFileManager) {
+        switch (ad.type) {
             case MIN:
-                break;
+                return new MinImporter(ad, cacheFileManager);
             case MAX:
-                break;
+                return new MaxImporter(ad, cacheFileManager);
             case ACT:
                 break;
             case AVG:
@@ -29,7 +43,7 @@ public class AggregationImporter {
             case MED:
                 break;
             default:
-                throw new AssertionError(type.name());
+                throw new AssertionError(ad.type.name());
 
         }
         return null;
@@ -53,5 +67,16 @@ public class AggregationImporter {
 
     public void save() {
         flush();
+    }
+
+    //static so we can use infix without importer reference
+    public static String getInfix(AggregationDescription ad) {
+        return '.'+ad.name.toLowerCase() ;
+    }
+
+    void begin(DataSequence ds) throws IOException {
+        ad.startTime = ds.getStart();
+        output = cacheFileManager.createCacheFile(getInfix(ad));
+        output.writeObject(ad);
     }
 }

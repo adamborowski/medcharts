@@ -32,6 +32,7 @@ public abstract class ImporterBase<TReader extends IDataReader> {
         return dataReader;
     }
     protected final AssemblyImporter assemblyImporter;
+    public final CacheFileManager cacheFileManager;
     protected final File sourceFile;
     protected BufferedReader sourceStream;
     protected float numSourceLines; // float, żeby nie konwertować potem
@@ -43,6 +44,7 @@ public abstract class ImporterBase<TReader extends IDataReader> {
         if (!sourceFile.exists()) {
             throw new FileNotFoundException(sourceFile.getName());
         }
+        this.cacheFileManager = new CacheFileManager(assemblyImporter.getBinPath(), sourceFile.toPath());
         isCacheValid = isCacheValidImpl();
     }
 
@@ -68,7 +70,7 @@ public abstract class ImporterBase<TReader extends IDataReader> {
     public long getComplexityRatio() {
         return sourceFile.length();
     }
-    private boolean isCacheValid;
+    protected boolean isCacheValid;
 
     /**
      * Getter który mówi, czy importer musi coś importować. W przypadku
@@ -227,6 +229,7 @@ public abstract class ImporterBase<TReader extends IDataReader> {
         binaryStream.readLong();
         return binaryStream;
     }
+
     final public ObjectInputStream openBinaryInputStream(String infix) throws IOException {
         return openBinaryInputStream(getBinaryFile(sourceFile, infix));
     }

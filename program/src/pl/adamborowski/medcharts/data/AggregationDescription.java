@@ -13,7 +13,13 @@ import java.io.Serializable;
  */
 public class AggregationDescription implements Serializable {
 
-    public enum AggregationType {
+    public AggregationDescription(String name, Type type, int range) {
+        this.name = name;
+        this.type = type;
+        this.range = range;
+    }
+
+    public enum Type {
 
         MIN, MAX, ACT, AVG, MED
 
@@ -25,7 +31,7 @@ public class AggregationDescription implements Serializable {
     /**
      * min, max, avg,...
      */
-    public AggregationType type;
+    public Type type;
     /**
      * start time of data
      */
