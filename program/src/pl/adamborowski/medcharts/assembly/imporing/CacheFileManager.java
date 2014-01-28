@@ -5,6 +5,7 @@
  */
 package pl.adamborowski.medcharts.assembly.imporing;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,6 +21,8 @@ import pl.adamborowski.utils.FileUtil;
  * @author adam
  */
 public class CacheFileManager {
+//    public static final int CACHE_FILE_BUFFER_SIZE = 8 * 1024;
+    public static final int CACHE_FILE_BUFFER_SIZE = 64 * 1024;
 
     protected final Path binPath;
     protected final Path sourceFilePath;
@@ -53,7 +56,7 @@ public class CacheFileManager {
         long lastModified = sourceFile.lastModified();
         File binaryFile = getBinaryFile(infix);
         binaryFile.delete();
-        ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(binaryFile));
+        ObjectOutputStream stream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(binaryFile), CACHE_FILE_BUFFER_SIZE));
         stream.writeInt(sourceFileName.hashCode());
         stream.writeLong(lastModified);
         return stream;
