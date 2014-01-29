@@ -19,6 +19,11 @@ public class AggregationDescription implements Serializable {
         this.range = range;
     }
 
+    @Override
+    public String toString() {
+        return "AggregationDescription{" + "name=" + name + ", type=" + type + ", startTime=" + startTime + ", range=" + range + '}';
+    }
+
     public enum Type {
 
         MIN, MAX, ACT, AVG, MED
@@ -35,9 +40,9 @@ public class AggregationDescription implements Serializable {
     /**
      * start time of data
      */
-    long startTime;
+    public long startTime;
     /**
      * number of probes per aggregation
      */
-    int range;
+    public int range;
 }

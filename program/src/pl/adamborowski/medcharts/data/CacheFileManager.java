@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pl.adamborowski.medcharts.assembly.imporing;
+package pl.adamborowski.medcharts.data;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,25 +37,25 @@ public class CacheFileManager {
         sourceFileName = FileUtil.getName(sourceFilePath.toFile());
     }
 
-    protected File getBinaryFile(String infix) {
+    public File getCacheFile(String infix) {
         return binPath.resolve(sourceFileName + infix + ".bin").toFile();
     }
 
     public ObjectInputStream openCacheFile(File binaryFile) throws IOException {
-        ObjectInputStream binaryStream = new ObjectInputStream(new FileInputStream(binaryFile));
+        ObjectInputStream binaryStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(binaryFile)));
         binaryStream.readInt(); // przy odczytaniu trzeba pominąć nagłówek
         binaryStream.readLong();
         return binaryStream;
     }
 
     public ObjectInputStream openCacheFile(String infix) throws IOException {
-        return openCacheFile(getBinaryFile(infix));
+        return openCacheFile(getCacheFile(infix));
     }
 
     public ObjectOutputStream createCacheFile(String infix) throws IOException {
         // hashowanie to nazwa pliku oraz data modyfikacji
         long lastModified = sourceFile.lastModified();
-        File binaryFile = getBinaryFile(infix);
+        File binaryFile = getCacheFile(infix);
         binaryFile.delete();
         ObjectOutputStream stream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(binaryFile), CACHE_FILE_BUFFER_SIZE));
         stream.writeInt(sourceFileName.hashCode());
@@ -64,7 +65,7 @@ public class CacheFileManager {
 
     public boolean isCacheFileValid(String infix) {
         try {
-            File binaryFile = getBinaryFile(infix);
+            File binaryFile = getCacheFile(infix);
             if (binaryFile.exists() == false) {
                 return false;
             }

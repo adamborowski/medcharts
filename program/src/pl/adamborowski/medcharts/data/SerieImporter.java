@@ -6,15 +6,12 @@
  */
 package pl.adamborowski.medcharts.data;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 import pl.adamborowski.medcharts.assembly.data.DataSequence;
-import pl.adamborowski.medcharts.assembly.imporing.CacheFileManager;
-import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
 
 /**
  *
@@ -22,8 +19,9 @@ import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
  */
 public class SerieImporter {
 
-    private final CacheFileManager cacheFileManager;
+    public final CacheFileManager cacheFileManager;
     private final ArrayList<AggregationImporter> aggregations;
+    private ObjectOutputStream configFile;
 
     public SerieImporter(CacheFileManager cacheFileManager) {
         this.aggregations = new ArrayList<>(10);
@@ -39,24 +37,56 @@ public class SerieImporter {
             return false;
         }
         for (AggregationImporter a : aggregations) {
-            if (!cacheFileManager.isCacheFileValid(AggregationImporter.getInfix(a.ad))) {
+            if (!a.isCacheValid()) {
                 return false;
             }
         }
         return true;
     }
 
+    public ArrayList<AggregationImporter> getAggregations() {
+        return aggregations;
+    }
+
     public void begin(DataSequence ds) throws IOException {
+        config.dataSequence = ds;
         for (AggregationImporter a : aggregations) {
             a.begin(ds);
         }
     }
 
-    public void process(float currentValue) {
-        for(AggregationImporter a:aggregations)
-        {
+    public void process(float currentValue) throws IOException {
+        for (AggregationImporter a : aggregations) {
             a.process(currentValue);
         }
+        if (currentValue > config.maxValue) {
+            config.maxValue = currentValue;
+        }
+        if (currentValue < config.minValue) {
+            config.minValue = currentValue;
+        }
+
+    }
+
+    public final void save() throws IOException {
+        for (AggregationImporter a : aggregations) {
+            a.save();
+        }
+        this.configFile = cacheFileManager.createCacheFile(".config");
+        configFile.writeObject(config);
+        configFile.close();
+    }
+
+    public static class SerieConfig implements Serializable {
+
+        public DataSequence dataSequence;
+        public float maxValue = -Float.MAX_VALUE;//defines boundaries of data
+        public float minValue = Float.MAX_VALUE;
+    }
+    protected final SerieConfig config = new SerieConfig();
+
+    public ObjectInputStream openCacheConfigFile() throws IOException {
+        return cacheFileManager.openCacheFile(".config");
     }
 
 }

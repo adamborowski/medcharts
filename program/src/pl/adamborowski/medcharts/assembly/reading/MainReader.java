@@ -5,22 +5,13 @@
 package pl.adamborowski.medcharts.assembly.reading;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import pl.adamborowski.medcharts.assembly.data.DataCollection;
 import pl.adamborowski.medcharts.assembly.data.DataRange;
 import pl.adamborowski.medcharts.assembly.data.DataSequence;
-import pl.adamborowski.medcharts.assembly.imporing.AggregationImporter;
-import pl.adamborowski.medcharts.assembly.imporing.ImporterBase;
 import pl.adamborowski.medcharts.assembly.imporing.MainImporter;
-import pl.adamborowski.medcharts.assembly.imporing.aggregation.MinMaxImporter;
+import pl.adamborowski.medcharts.data.SerieReader;
 import pl.adamborowski.medcharts.renderers.SpaceManager;
-import pl.adamborowski.utils.TimeUtil;
+import pl.adamborowski.utils.builders.HierarchyBuilder;
 
 /**
  * Czytnik formatu binarnego do używania przez drivery
@@ -29,27 +20,22 @@ import pl.adamborowski.utils.TimeUtil;
  */
 public class MainReader implements IDataReader<DataCollection> {
 
-    public static final int FRAME_BYTES_X = Long.SIZE / Byte.SIZE;
-    public static final int FRAME_BYTES_Y = Float.SIZE / Byte.SIZE;
-    public static final int FRAME_BYTES = FRAME_BYTES_X + FRAME_BYTES_Y;
     /*
      * [x][a][b][start] // sekwencja int int int long
      * [maxModule] //miejsce na maksymalny moduł float
      */
-    private static final int FRAME_START = (3 * Integer.SIZE + Long.SIZE + Float.SIZE) / Byte.SIZE + ImporterBase.HEADER_SIZE;
     private DataSequence sequence;
     private float maxModule;
-    private ObjectInputStream aggregationStream;
-    private ArrayList<AggregationImporter.DataProvider> aggregations;
+    public SerieReader serieReader;
 
     public float getMaxModule() {
-        return maxModule;
+        return Math.max(Math.abs(serieReader.config.maxValue), Math.abs(serieReader.config.minValue));
     }
     private final MainImporter importer;
 
     @Override
     public long getStart() {
-        return sequence.getStart();
+        return serieReader.actAggregationReader.getStart();
     }
 
     public long getNumProbes() {
@@ -58,17 +44,11 @@ public class MainReader implements IDataReader<DataCollection> {
 
     @Override
     public long getEnd() {
-        return end;
+        return serieReader.actAggregationReader.getEnd();
     }
     private int numProbes;
     private long end;
-    private RandomAccessFile raf;
 
-//    public DataRange createRange(int startProbe, int endProbe, int resolution)
-//    {
-//        //zwróć nową rangę która będzie
-//        return new DataRange(sequence.getStart() + startProbe * interval, sequence.getStart() + endProbe * interval, resolution);
-//    }
     public MainReader(MainImporter importer) {
         this.importer = importer;
     }
@@ -76,27 +56,22 @@ public class MainReader implements IDataReader<DataCollection> {
     @Override
     public void initialize() throws IOException {
 
-        raf = importer.openBinary("");
-        aggregationStream = importer.openBinaryInputStream(".aggregations");
-        try {
-            aggregations = (ArrayList<AggregationImporter.DataProvider>) aggregationStream.readObject();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MainReader.class.getName()).log(Level.SEVERE, null, ex);
-
-        }
-        Collections.reverse(aggregations);//XXX  będziemy przeszuiwali agregacje od najgrubszej
-        //odczyt z pliku binarnego takich danych jak ilość próbek, pierwszy x, ostatni x
-        int x = raf.readInt();
-        int a = raf.readInt();
-        int b = raf.readInt();
-        long start = raf.readLong();
-        maxModule = raf.readFloat();
-        sequence = new DataSequence(x, a, b, start);
-        numProbes = (int) ((raf.length() - raf.getFilePointer()) / FRAME_BYTES_Y);
-        end = sequence.toTime(numProbes - 1);
-        //
-        AggregationImporter.DataProvider noAggregation = aggregations.get(aggregations.size()-1);
-        noAggregation.range = sequence.getSequenceLength();//zapewnij dobry dobór dla tych próbek przy automatycznym dostosowaniu
+        serieReader = HierarchyBuilder.buildReaderHierarchyFromImporterHierarchy(this.importer.serieImporter);
+        sequence = serieReader.config.dataSequence;
+        int e = 2;
+////        Collections.reverse(aggregations);//XXX  będziemy przeszuiwali agregacje od najgrubszej
+//        //odczyt z pliku binarnego takich danych jak ilość próbek, pierwszy x, ostatni x
+//        int x = raf.readInt();
+//        int a = raf.readInt();
+//        int b = raf.readInt();
+//        long start = raf.readLong();
+//        maxModule = raf.readFloat();
+//        sequence = new DataSequence(x, a, b, start);
+//        numProbes = (int) ((raf.length() - raf.getFilePointer()) / FRAME_BYTES_Y);
+//        end = sequence.toTime(numProbes - 1);
+//        //
+//        AggregationImporter.DataProvider noAggregation = aggregations.get(aggregations.size()-1);
+//        noAggregation.range = sequence.getSequenceLength();//zapewnij dobry dobór dla tych próbek przy automatycznym dostosowaniu
     }
 
     @Override
@@ -127,31 +102,31 @@ public class MainReader implements IDataReader<DataCollection> {
         readProbe_probeIndex = moveTo(x);
         int probeIndex = sequence.toProbeIndex(x);
 
-        if (aggregations.isEmpty()) {
-            float tmp = raf.readFloat();
-            return tmp;
-        }
-        AggregationImporter.DataProvider currentAggregation = aggregations.get(aggregations.size() - 1);
-        //idziemy od najbardziej szczegółowej agregacji do ogólnej i dopóki range mieści się w maxRange (1/scaleX) to doputy dobieramy skalę
-        float minRange = (scale);
-//        if (minRange < aggregations.get(aggregations.size() - 1).range) {
-//        System.out.println("tmp");
-//            return tmp;
+//        if (aggregations.isEmpty()) {
+        float tmp = 0;// raf.readFloat();
+        return tmp;
 //        }
-        for (AggregationImporter.DataProvider a : aggregations) {
-            if (a.range < minRange) {
-                break;
-            }
-            currentAggregation = a;
-        }
-        System.out.println("a: " + currentAggregation.name);
-        final int aggregationIndex;
-        if (currentAggregation.name.equals("1ms")) {
-            aggregationIndex = probeIndex;
-        } else {
-            aggregationIndex = (int) (probeIndex / (currentAggregation.range / sequence.getSequenceLength() * sequence.getSequenceCount()));
-        }
-        return ((MinMaxImporter.MinMax) currentAggregation.getAggregation(aggregationIndex)).max;
+//        AggregationImporter.DataProvider currentAggregation = aggregations.get(aggregations.size() - 1);
+//        //idziemy od najbardziej szczegółowej agregacji do ogólnej i dopóki range mieści się w maxRange (1/scaleX) to doputy dobieramy skalę
+//        float minRange = (scale);
+////        if (minRange < aggregations.get(aggregations.size() - 1).range) {
+////        System.out.println("tmp");
+////            return tmp;
+////        }
+//        for (AggregationImporter.DataProvider a : aggregations) {
+//            if (a.range < minRange) {
+//                break;
+//            }
+//            currentAggregation = a;
+//        }
+//        System.out.println("a: " + currentAggregation.name);
+//        final int aggregationIndex;
+//        if (currentAggregation.name.equals("1ms")) {
+//            aggregationIndex = probeIndex;
+//        } else {
+//            aggregationIndex = (int) (probeIndex / (currentAggregation.range / sequence.getSequenceLength() * sequence.getSequenceCount()));
+//        }
+//        return ((MinMaxImporter.MinMax) currentAggregation.getAggregation(aggregationIndex)).max;
 
     }
 
@@ -166,16 +141,16 @@ public class MainReader implements IDataReader<DataCollection> {
         }
         final int probeIndex = sequence.toProbeIndex(x);
         //RandomA
-        raf.seek(FRAME_START + FRAME_BYTES_Y * probeIndex);
+//        raf.seek(FRAME_START + FRAME_BYTES_Y * probeIndex);
         return probeIndex;
     }
 
     public void skip(long deltaX) throws IOException {
-        raf.skipBytes((int) (deltaX * FRAME_BYTES_Y));
+//        raf.skipBytes((int) (deltaX * FRAME_BYTES_Y));
     }
 
     public void close() throws IOException {
-        raf.close();
+//        raf.close();
     }
 
     @Override

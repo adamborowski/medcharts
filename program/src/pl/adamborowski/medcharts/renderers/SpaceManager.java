@@ -21,7 +21,7 @@ final public class SpaceManager
     private int phaseXShift;
     private long firstTime;
     private long lastTime;
-    private float dataPerPixel;
+    private float millisecondsPerPixel;
 //    private float intervalsPerPixel;
     private long dataX;
     private float dataY;
@@ -77,7 +77,7 @@ final public class SpaceManager
         zeroYPosition = height / 2;
         zeroXPosition = width / 2;
         //
-        dataPerPixel = scaleX;//z definicji skali x: ile  próbek na piksel
+        millisecondsPerPixel = scaleX;//z definicji skali x: ile  próbek na piksel
 
         //visibleDisplay od teraz zmienia się wyznaczenie dataVisibilitybounds! - dany piksel dokładnie wskazuje data 
         //a nie tak, że my zadajemy komponentowi wyświetlić coś w pół piksela
@@ -117,7 +117,7 @@ final public class SpaceManager
 
 //        intervalsPerPixel = dataPerPixel / (float) sequence;
         //o ile trzeba przesunąć dziedzinę, aby zobaczyć xData na środku canvasu?
-        resolution = (int) dataPerPixel; // TODO ZASTĄPIĆ jakimś sequence
+        resolution = (int) millisecondsPerPixel; // TODO ZASTĄPIĆ jakimś sequence
 
     }
 
@@ -140,13 +140,13 @@ final public class SpaceManager
      */
     final public long toDataX(float displayX)
     {
-        return (long) (dataX + (displayX - zeroXPosition) * dataPerPixel);
+        return (long) (dataX + (displayX - zeroXPosition) * millisecondsPerPixel);
         //return (long) (visibleData.first + (displayX) * dataPerPixel);
     }
 
     final public float toDisplayX(long dataXParam)
     {
-        return (dataXParam - dataX) / dataPerPixel + zeroXPosition;
+        return (dataXParam - dataX) / millisecondsPerPixel + zeroXPosition;
 //        return (float) (dataX - visibleData.first) / dataPerPixel;
     }
 
@@ -167,7 +167,7 @@ final public class SpaceManager
 
     final public long toDataWidth(float displayWidth)
     {
-        return (long) (displayWidth * dataPerPixel);
+        return (long) (displayWidth * millisecondsPerPixel);
     }
 
     final public float toDataHeight(float displayHeight)
@@ -177,7 +177,7 @@ final public class SpaceManager
 
     final public float toDisplayWidth(long dataWidth)
     {
-        return dataWidth / dataPerPixel;
+        return dataWidth / millisecondsPerPixel;
     }
 
     final public long fitToSequence(long time)
@@ -229,7 +229,7 @@ final public class SpaceManager
 
     final public float getDataPerPixel()
     {
-        return dataPerPixel;
+        return millisecondsPerPixel;
     }
 
 //    final public float getIntervalsPerPixel()
@@ -270,22 +270,22 @@ final public class SpaceManager
     public class DataVisibilityBounds
     {
 
-        long first;
-        long last;
-        long firstAccessible;
-        long lastAccessible;
-        long length;
-        long lengthAccessible;
+        public long first;
+        public long last;
+        public long firstAccessible;
+        public long lastAccessible;
+        public long length;
+        public long lengthAccessible;
     }
 
     public class DisplayVisibilityBounds
     {
 
-        int first;
-        int last;
-        int firstAccessible;
-        int lastAccessible;
-        int length;
-        int lengthAccessible;
+        public int first;
+        public int last;
+        public int firstAccessible;
+        public int lastAccessible;
+        public int length;
+        public int lengthAccessible;
     }
 }

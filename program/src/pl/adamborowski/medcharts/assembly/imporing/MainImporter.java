@@ -13,6 +13,7 @@ import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
 import pl.adamborowski.medcharts.assembly.reading.MainReader;
 import pl.adamborowski.medcharts.data.AggregationDescription;
 import pl.adamborowski.medcharts.data.SerieImporter;
+import pl.adamborowski.medcharts.data.SerieReader;
 import pl.adamborowski.utils.ParseUtil;
 import sun.misc.FloatingDecimal;
 
@@ -48,10 +49,11 @@ public final class MainImporter extends ImporterBase<MainReader> {
                 List<AggregationDescription.Type> types = ParseUtil.parseTypes(aggregation.getType());
                 for (AggregationDescription.Type type : types) {
                     serieImporter.addAggregation(new AggregationDescription(type.name() + aggregation.getRange(), type, ParseUtil.parseRange(aggregation.getRange())));
-
                 }
             }
         }
+        final AggregationDescription actAggregationImporter = new AggregationDescription("act", AggregationDescription.Type.ACT, 0);
+        serieImporter.addAggregation(actAggregationImporter);
         isCacheValid = serieImporter.isCacheValid();
     }
     ///////////////////////
@@ -61,35 +63,19 @@ public final class MainImporter extends ImporterBase<MainReader> {
 
     @Override
     protected void importImpl() throws IOException, ParseException {
-        RandomAccessFile raf = createBinary(sourceFile, ""); //tworzymy nowy plik binarny
-        long beginPos = raf.getFilePointer();
         String line;
-        String[] splitted;
-
         for (int i = 0; i < NUM_ILLEGAL_LINES; i++) {
             sourceStream.readLine();
         }
         float maxModule = 0;
-        long maxModuleFilePos;
         float currentValue;
         ArrayList<Float> values = checkSequence();
-        serieImporter.begin(sequence);
         //przygotuj agregacje
+        serieImporter.begin(sequence);
         //zapisz sekwencję do pliku
-        raf.writeInt(sequence.getX());
-        raf.writeInt(sequence.getA());
-        raf.writeInt(sequence.getB());
-        raf.writeLong(sequence.getStart());
-        //zrób miejsce na maksymalny moduł
-        maxModuleFilePos = raf.getFilePointer();
-        raf.writeFloat(0f);
-        //przewidywanie wielkości pliku
-        raf.setLength((long) (raf.getFilePointer() + MainReader.FRAME_BYTES_Y * (numSourceLines - NUM_ILLEGAL_LINES)));
-        System.out.println("length expected: " + raf.length());
 
         //wpisz wartości, które były testowane do pomiaru sekwencji
         for (Float testValue : values) {
-            raf.writeFloat(testValue);
             maxModule = Math.max(maxModule, Math.abs(testValue));
             serieImporter.process(testValue);
         }
@@ -102,32 +88,12 @@ public final class MainImporter extends ImporterBase<MainReader> {
             } catch (NumberFormatException ex) {
                 currentValue = Float.NaN;
             }
-
-            raf.writeFloat(currentValue);
-
             serieImporter.process(currentValue);
-
             setLineProgress(++currentLine);
         }
         //zapisz maksymalny moduł wartości
 
-        System.out.println("length final: " + raf.getFilePointer());
-        raf.setLength(raf.getFilePointer());
-        raf.seek(maxModuleFilePos);
-        raf.writeFloat(maxModule);
-
-        //spr:
-        raf.seek(beginPos);
-        System.out.println("x: " + raf.readInt());
-        System.out.println("a: " + raf.readInt());
-        System.out.println("b: " + raf.readInt());
-        System.out.println("start: " + raf.readLong());
-        System.out.println("maxModule: " + raf.readFloat());
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i + ": " + raf.readFloat());;
-        }
-        raf.seek(raf.length() - MainReader.FRAME_BYTES_Y);
-        System.out.println("last i: " + raf.readFloat());;
+        serieImporter.save();
         System.out.println("KONIEC");
     }
 
@@ -179,6 +145,7 @@ public final class MainImporter extends ImporterBase<MainReader> {
 
         return values;
     }
+
     private float readValue_value;
     private long readValue_date;
     private String[] splitted;

@@ -4,6 +4,7 @@
  */
 package pl.adamborowski.medcharts.assembly.imporing;
 
+import pl.adamborowski.medcharts.data.CacheFileManager;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,7 +18,9 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.text.ParseException;
 import pl.adamborowski.medcharts.assembly.reading.IDataReader;
+import pl.adamborowski.medcharts.data.SerieReader;
 import pl.adamborowski.utils.FileUtil;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -47,7 +50,6 @@ public abstract class ImporterBase<TReader extends IDataReader> {
         this.cacheFileManager = new CacheFileManager(assemblyImporter.getBinPath(), sourceFile.toPath());
         isCacheValid = isCacheValidImpl();
     }
-
     /**
      * musi być wykonane w konstruktorze klasy pochodnej
      *
