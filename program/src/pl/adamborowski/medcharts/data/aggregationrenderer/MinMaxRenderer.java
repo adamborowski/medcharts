@@ -5,7 +5,9 @@
  */
 package pl.adamborowski.medcharts.data.aggregationrenderer;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
+import pl.adamborowski.medcharts.MedChartPreferences;
 import pl.adamborowski.medcharts.assembly.data.DataRange;
 import pl.adamborowski.medcharts.data.AggregationReader;
 import pl.adamborowski.medcharts.data.AggregationRenderer;
@@ -26,6 +28,7 @@ public class MinMaxRenderer extends AggregationRenderer {
         super(sp);
         this.maxReader = maxReader;
         this.minReader = minReader;
+        range = minReader.getRange();
     }
 
     final int maxSamples = 10000;
@@ -35,7 +38,7 @@ public class MinMaxRenderer extends AggregationRenderer {
     int lastNumPoints = 0;
 
     @Override
-    public void render(Graphics2D g) {
+    public void render(Graphics2D g, boolean drawBalls) {
 //        newRange = new DataRange(sp.fitToSequence(sp.visibleData.firstAccessible), Math.min(sp.fitToSequence(minReader.getEnd()), sp.getSequence().moveTime(sp.visibleData.lastAccessible, 2)), (int) (float) Math.ceil(sp.getScaleX()));//todo zmieniono +interval na nexttime
         int numMaxPoints = 0;
         for (AggregationReader.Point point : maxReader.getData(newRange.getStart(), newRange.getEnd())) {
@@ -50,6 +53,7 @@ public class MinMaxRenderer extends AggregationRenderer {
             yPoints[lastSampleIndex - numMinPoints] = (int) sp.toDisplayY(point.value);
             numMinPoints++;
         }
+        numSamplesRendered = numMaxPoints;
         int totalNumPoints = numMaxPoints + numMinPoints;
         g.fillPolygon(xPoints, yPoints, totalNumPoints);
         g.drawPolygon(xPoints, yPoints, totalNumPoints);
@@ -72,5 +76,11 @@ public class MinMaxRenderer extends AggregationRenderer {
                 extremum.min = point.value;
             }
         }
+    }
+
+    @Override
+    public void renderHint(Graphics2D g, int mouseDisplayX, int mouseDisplayY, int positionPreference, boolean isUnderMouse, Color color) {
+        renderHintImpl(g, mouseDisplayX, mouseDisplayY, maxReader, MedChartPreferences.HINT_POSITION_TOP, isUnderMouse, color);
+        renderHintImpl(g, mouseDisplayX, mouseDisplayY, minReader, MedChartPreferences.HINT_POSITION_BOTTOM, isUnderMouse,  color);
     }
 }

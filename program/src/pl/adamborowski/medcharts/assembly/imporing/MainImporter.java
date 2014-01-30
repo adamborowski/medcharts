@@ -1,24 +1,15 @@
 package pl.adamborowski.medcharts.assembly.imporing;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 import pl.adamborowski.medcharts.assembly.data.DataSequence;
-import pl.adamborowski.medcharts.assembly.jaxb.Aggregations;
-import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
 import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.assembly.reading.MainReader;
-import pl.adamborowski.medcharts.data.AggregationDescription;
 import pl.adamborowski.medcharts.data.SerieImporter;
-import pl.adamborowski.medcharts.data.SerieReader;
-import pl.adamborowski.utils.ParseUtil;
 import pl.adamborowski.utils.builders.HierarchyBuilder;
-import sun.misc.FloatingDecimal;
 
 /*
  * MainImporter importuje dane główne wykresu, żródła tekstowe zawierają daty i

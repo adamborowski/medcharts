@@ -47,6 +47,13 @@ public class OverlayRenderer extends DataRendererBase<OverlayLinesCollection.Mul
         renderMasks(g);
         renderGraphs(g);
     }
+    
+    private boolean drawBalls;
+
+    public void setRenderBalls(boolean renderBalls) {
+        this.drawBalls = renderBalls;
+    }
+    
 
     private void initTitles() {
         int numEntry = binding.getLine().size() + binding.getMask().size();
@@ -92,7 +99,7 @@ public class OverlayRenderer extends DataRendererBase<OverlayLinesCollection.Mul
             
             
             g.setPaint(Color.decode(reader2.getBinding().getLine().get(i).getColor()));
-            s.render(g);
+            s.render(g, drawBalls);
             
             i++;
         }

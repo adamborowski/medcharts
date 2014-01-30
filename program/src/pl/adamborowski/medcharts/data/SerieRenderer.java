@@ -4,6 +4,7 @@
  */
 package pl.adamborowski.medcharts.data;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class SerieRenderer {
     private SpaceManager sp;
     private int goodRange;
 
-    public SerieRenderer(SerieReader reader,  SpaceManager sp) {
+    public SerieRenderer(SerieReader reader, SpaceManager sp) {
         this.reader = reader;
         this.sp = sp;
     }
@@ -33,10 +34,14 @@ public class SerieRenderer {
 
     }
 
-    public void render(Graphics2D g) {
-       //uwaga! calculateExtremum ma być wywołane tuż przed.
-        currentAggregationRenderer.render(g);
+    public void render(Graphics2D g, boolean drawBalls) {
+        //uwaga! calculateExtremum ma być wywołane tuż przed.
+        currentAggregationRenderer.render(g, drawBalls);
 
+    }
+
+    public AggregationRenderer getCurrentAggregationRenderer() {
+        return currentAggregationRenderer;
     }
 
     int[] ranges;
@@ -49,7 +54,6 @@ public class SerieRenderer {
         int i = 0;
         for (AggregationReader a : reader.getAggregationReaders()) {
             ranges[i] = a.getRange();
-            System.out.println("aggregation: " + a.ad);
             i++;
         }
         Arrays.sort(ranges);
@@ -92,7 +96,7 @@ public class SerieRenderer {
     }
 
     public void calculateExtremum(DataRendererBase.Extremum extremum) {
-         float scaleX = sp.getScaleX();
+        float scaleX = sp.getScaleX();
         int lastGoodRange = goodRange;
         this.goodRange = getBestRange(scaleX);
         currentAggregationRenderer = aggregationRenderers.get(goodRange);//todo test
@@ -102,5 +106,9 @@ public class SerieRenderer {
         }
         currentAggregationRenderer.calculateExtremum(extremum);
 
+    }
+
+    public void renderHint(Graphics2D g, int mouseDisplayX, int mouseDisplayY, int positionPreference, boolean isUnderMouse, Color color) {
+        currentAggregationRenderer.renderHint(g, mouseDisplayX, mouseDisplayY, positionPreference, isUnderMouse, color);
     }
 }

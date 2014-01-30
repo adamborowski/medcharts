@@ -10,12 +10,12 @@ import pl.adamborowski.medcharts.renderers.RootRenderer;
 
 /**
  * Ważna zmiana- od tej pory skala oznacza ilość milisekund na piksel
+ *
  * @author test
  */
-final public class SpaceManager
-{
+final public class SpaceManager {
 
-    private  RootRenderer viewRenderer;
+    private RootRenderer viewRenderer;
     private float yMultiplier;
     private DataSequence sequence;
     private int phaseXShift;
@@ -37,17 +37,14 @@ final public class SpaceManager
     public final DataVisibilityBounds visibleData = new DataVisibilityBounds();
     public final DisplayVisibilityBounds visibleDisplay = new DisplayVisibilityBounds();
 
-    public SpaceManager()
-    {
+    public SpaceManager() {
     }
 
-    public void setViewRenderer(RootRenderer viewRenderer)
-    {
+    public void setViewRenderer(RootRenderer viewRenderer) {
         this.viewRenderer = viewRenderer;
     }
 
-    final void configure(MainReader mr)
-    {
+    final void configure(MainReader mr) {
         sequence = mr.getSequence();
         firstTime = mr.getStart();
         lastTime = mr.getEnd();
@@ -56,8 +53,7 @@ final public class SpaceManager
 //        System.out.println(dataMaxModule);
     }
 
-    final void update()
-    {
+    final void update() {
         //
         dataX = viewRenderer.getDataX();
         dataY = viewRenderer.getDataY();
@@ -65,8 +61,7 @@ final public class SpaceManager
         scaleY = viewRenderer.getScaleY();
         width = viewRenderer.getWidth();
         height = viewRenderer.getHeight();
-        if (height == 0 || width == 0)
-        {
+        if (height == 0 || width == 0) {
             return;
         }
 //        System.out.println("dataMaxModule: "+dataMaxModule);
@@ -83,7 +78,6 @@ final public class SpaceManager
         //a nie tak, że my zadajemy komponentowi wyświetlić coś w pół piksela
         //teraz jest tak że próbujemy zrobić tak jak każą (dataX) ale jak nie trafimy równo w całkowity piksel, to poprawiamy
         //datavisibility bounds, bo inaczej powstaje przekłamanie.
-
         visibleDisplay.first = 0;
         visibleDisplay.last = width - 1;
         visibleDisplay.firstAccessible = (int) Math.ceil(Math.max(visibleDisplay.first, toDisplayX(firstTime)));
@@ -114,20 +108,17 @@ final public class SpaceManager
          //jaka minimalna rozdzielczość jest potrzebna?
          //kalkuluj długość przedziału na jeden pixel
          */
-
 //        intervalsPerPixel = dataPerPixel / (float) sequence;
         //o ile trzeba przesunąć dziedzinę, aby zobaczyć xData na środku canvasu?
         resolution = (int) millisecondsPerPixel; // TODO ZASTĄPIĆ jakimś sequence
 
     }
 
-    final public int getVisibleWidth()
-    {
+    final public int getVisibleWidth() {
         return width;
     }
 
-    final public int getHeight()
-    {
+    final public int getHeight() {
         return height;
     }
 
@@ -138,56 +129,46 @@ final public class SpaceManager
      * @param displayX
      * @return
      */
-    final public long toDataX(float displayX)
-    {
+    final public long toDataX(float displayX) {
         return (long) (dataX + (displayX - zeroXPosition) * millisecondsPerPixel);
         //return (long) (visibleData.first + (displayX) * dataPerPixel);
     }
 
-    final public float toDisplayX(long dataXParam)
-    {
+    final public float toDisplayX(long dataXParam) {
         return (dataXParam - dataX) / millisecondsPerPixel + zeroXPosition;
 //        return (float) (dataX - visibleData.first) / dataPerPixel;
     }
 
-    final public float toDataY(float displayY)
-    {
+    final public float toDataY(float displayY) {
         return -(displayY - localYOffset) / yMultiplier;
     }
 
-    final public float toDisplayY(float dataY)
-    {
+    final public float toDisplayY(float dataY) {
         return (-dataY) * yMultiplier + localYOffset;
     }
 
-    final public float toDisplayHeight(float dataHeight)
-    {
+    final public float toDisplayHeight(float dataHeight) {
         return -dataHeight * yMultiplier;
     }
 
-    final public long toDataWidth(float displayWidth)
-    {
+    final public long toDataWidth(float displayWidth) {
         return (long) (displayWidth * millisecondsPerPixel);
     }
 
-    final public float toDataHeight(float displayHeight)
-    {
+    final public float toDataHeight(float displayHeight) {
         return (displayHeight) / yMultiplier;
     }
 
-    final public float toDisplayWidth(long dataWidth)
-    {
+    final public float toDisplayWidth(long dataWidth) {
         return dataWidth / millisecondsPerPixel;
     }
 
-    final public long fitToSequence(long time)
-    {
+    final public long fitToSequence(long time) {
         //TODO ZMIANA będzie
         return sequence.fitTime(time);
     }
 
-    final public long toDataXAndFixToFitIntervalAndPhaseShift(float displayX)
-    {
+    final public long toDataXAndFixToFitIntervalAndPhaseShift(float displayX) {
         return fitToSequence(toDataX(displayX));
     }
 
@@ -196,39 +177,31 @@ final public class SpaceManager
 //        //TODO PROBLEMATYCZNE gdy nie ma info, gdzie ten odcinek będzie (trzeba podać raczej x1 oraz x2 --> fitToSequence, i zwrócić różnicę
 //        return (long) (Math.ceil(xData / sequence) * sequence);
 //    }
-
-    final public float getDataMaxModule()
-    {
+    final public float getDataMaxModule() {
         return dataMaxModule;
     }
 
-    final public int getZeroYPosition()
-    {
+    final public int getZeroYPosition() {
         return zeroYPosition;
     }
 
-    final public DataSequence getSequence()
-    {
+    final public DataSequence getSequence() {
         return sequence;
     }
 
-    final public int getPhaseXShift()
-    {
+    final public int getPhaseXShift() {
         return phaseXShift;
     }
 
-    final public long getFirstTime()
-    {
+    final public long getFirstTime() {
         return firstTime;
     }
 
-    final public long getLastTime()
-    {
+    final public long getLastTime() {
         return lastTime;
     }
 
-    final public float getDataPerPixel()
-    {
+    final public float getDataPerPixel() {
         return millisecondsPerPixel;
     }
 
@@ -236,39 +209,42 @@ final public class SpaceManager
 //    {
 //        return intervalsPerPixel;
 //    }
-
-    final public long getDataX()
-    {
+    final public long getDataX() {
         return dataX;
     }
 
-    final public float getDataY()
-    {
+    final public float getDataY() {
         return dataY;
     }
 
-    final public float getScaleX()
-    {
+    final public float getScaleX() {
         return scaleX;
     }
 
-    final public float getScaleY()
-    {
+    final public float getScaleY() {
         return scaleY;
     }
 
-    final public float getLocalYOffset()
-    {
+    final public float getLocalYOffset() {
         return localYOffset;
     }
 
-    final public int getResolution()
-    {
+    final public int getResolution() {
         return resolution;
     }
 
-    public class DataVisibilityBounds
-    {
+    public long fixExceedingTime(long fitTime) {
+        if (fitTime < visibleData.firstAccessible) {
+            fitTime = visibleData.firstAccessible;
+        }
+        if (fitTime > visibleData.lastAccessible) {
+            fitTime = visibleData.lastAccessible;
+        }
+        return fitTime;
+
+    }
+
+    public class DataVisibilityBounds {
 
         public long first;
         public long last;
@@ -278,8 +254,7 @@ final public class SpaceManager
         public long lengthAccessible;
     }
 
-    public class DisplayVisibilityBounds
-    {
+    public class DisplayVisibilityBounds {
 
         public int first;
         public int last;

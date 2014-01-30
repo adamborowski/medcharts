@@ -86,7 +86,7 @@ public class SerieRenderer extends DataRendererBase<Float, Serie, DataCollection
         y2 = 0; //(int) sp().toDisplayY(currentScope.data.getYData()[0]);
         final int p = 2, p2 = 2 * p;
         final int pointsSpace = 2;
-        final boolean drawPoitns = sp().getScaleX() < sp().getSequence().getA() / (float) (p2 + pointsSpace);
+        final boolean drawPoints = sp().getScaleX() < sp().getSequence().getA() / (float) (p2 + pointsSpace);
         // wyznacz najbliższą próbkę
         bestDistance = Integer.MAX_VALUE;
         bestProbe = 0;
@@ -105,17 +105,7 @@ public class SerieRenderer extends DataRendererBase<Float, Serie, DataCollection
                 showHint = false;
         }
         mouseX = getMouseScreen().x;
-//        Point mouse = getMouse();
-//        if (mouse != null)
-//        {
-//            showHint = true;
-//            mouseX = getMouse().x;
-//        } else
-//        {
-//            mouseX = 0;
-//        }
-        //
-        serieRenderer.render(g);
+        serieRenderer.render(g, drawPoints);
 //                                                                                                for (DataCollection.DataItem i : currentScope.data) {
 //                                                                                                    newX = (int) sp().toDisplayX(i.x);
 //                                                                                                    if (newX == x2 && i.i != 0) {
@@ -230,11 +220,25 @@ public class SerieRenderer extends DataRendererBase<Float, Serie, DataCollection
          */
         // </editor-fold>
         if (overlay != null) {
+            overlay.setRenderBalls(drawPoints);
             overlay.render(g);
         }
+        g.setPaint(new Color(0xff, 0xff, 0xff, 180));
+        g.fillRect(200, 0, 800, 14);
+        g.setPaint(new Color(0x222222));
+        final int numSamples = serieRenderer.getCurrentAggregationRenderer().getNumSamplesRendered();
+        final int aggregationRange = serieRenderer.getCurrentAggregationRenderer().getRange();
+        final float scale = sp().getScaleX();
+        final float timePerProbe = sp().getSequence().getSequenceLength() / sp().getSequence().getSequenceCount();
+        g.drawString(""
+                + "samples/pixel: " + numSamples / sp().getVisibleWidth()
+                + ", num samples: " + numSamples
+                + ", time/pixel (scale): " + scale
+                + ", aggr resolution: " + aggregationRange
+                + ", data resolution: " + timePerProbe, 210, 11);
         title.render(g);
     }
-//    @Override
+//    @Override <   
 //    public void render(Graphics2D g)
 //    {
 //        if (currentScope.willRender() == false)
@@ -427,55 +431,12 @@ public class SerieRenderer extends DataRendererBase<Float, Serie, DataCollection
         if (getViewport().getBehaviourController().isWorking()) {
             return;
         }
-
-        int preferredX = bestX;
-        int bottomPosition = sp().getHeight() - 25;
-        int preferredY = bottomPosition;
-        int upPosition = 3;
-        if (sp().getHeight() > 90) {
-            switch (getPreferenceI(MedChartPreferences.HINT_POSITION)) {
-                case MedChartPreferences.HINT_POSITION_BOTTOM:
-                    preferredY = bottomPosition;
-                    break;
-                case MedChartPreferences.HINT_POSITION_MOUSE:
-                    if (isUnderMouse()) {
-                        preferredY = getMouseScreen().y + 15;
-                        preferredX += 10;
-                    }
-                    break;
-                default: // (value)
-                    preferredY = bestY + 5;
-                    preferredX = bestX + 5;
-                    break;
-            }
-        }
-        if (showHint) {
-            g.setPaint(Color.red);
-            final int r = 4;
-            final int r2 = r * 2;
-            g.drawArc(bestX - r, bestY - r, r2, r2, 0, 360);
-            final int margin = 3;
-            int xx = preferredX;
-
-            if (xx < margin) {
-                xx = margin;
-            }
-            if (xx > sp().getVisibleWidth() - 200 - margin) {
-                xx = sp().getVisibleWidth() - 200 - margin;
-            }
-
-            hintRenderer.setX(xx);
-            hintRenderer.setPadding(3);
-            hintRenderer.setText(String.format("%s = %g", DateUtil.stringify(bestProbe), bestValue));
-            if (preferredY <= margin) {
-                preferredY = margin;
-            } else if (preferredY > bottomPosition) {
-                preferredY = bottomPosition;
-            }
-            hintRenderer.setY(preferredY);
-            hintRenderer.render(g);
-
-        }
+       if(showHint)
+       {
+            int mousePosX = (int) getMouseScreen().getX();
+        int mousePosY = (int) getMouseScreen().getY();
+        serieRenderer.renderHint(g, mousePosX, mousePosY, getPreferenceI(MedChartPreferences.HINT_POSITION), showHint, Color.decode(binding.getColor()));
+       }
     }
 
     @Override
@@ -485,7 +446,7 @@ public class SerieRenderer extends DataRendererBase<Float, Serie, DataCollection
 
     @Override
     public void calculateExtremum(DataRendererBase.Extremum extremum) {
-        this.extremum=extremum;
+        this.extremum = extremum;
         extremum.max = -Float.MAX_VALUE;
         extremum.min = Float.MAX_VALUE;
         serieRenderer.calculateExtremum(extremum);
