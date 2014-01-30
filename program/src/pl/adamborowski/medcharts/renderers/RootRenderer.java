@@ -14,6 +14,7 @@ import pl.adamborowski.medcharts.SelectionController;
 import pl.adamborowski.medcharts.Viewport;
 import pl.adamborowski.medcharts.assembly.imporing.AssemblyImporter.Mapping;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.assembly.reading.MainReader;
 import pl.adamborowski.utils.FontUtil;
 
@@ -62,7 +63,7 @@ public final class RootRenderer extends ViewRendererBase
      * @param serie
      * @param mapping
      */
-    public RootRenderer(Assembly.Serie serie, Mapping mapping, Viewport viewport, SpaceManager spaceManager, SelectionController sc)
+    public RootRenderer(Serie serie, Mapping mapping, Viewport viewport, SpaceManager spaceManager, SelectionController sc)
     {
         super(serie, mapping);
         renderGrid = true;
@@ -165,7 +166,7 @@ public final class RootRenderer extends ViewRendererBase
         if (serieRenderer != null)
         {
 //            serieRenderer.gatherData();
-            serieRenderer.calculateExtremum();
+            serieRenderer.calculateExtremum(new DataRendererBase.Extremum());
             if (isAutoScaleY())
             {
                 SerieRenderer.CalculateAutoResult newParams = serieRenderer.calculateAutoParams();

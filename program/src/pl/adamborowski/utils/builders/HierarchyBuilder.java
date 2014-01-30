@@ -9,11 +9,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import java.util.List;
+import pl.adamborowski.medcharts.assembly.jaxb.Aggregations;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.data.AggregationDescription;
 import pl.adamborowski.medcharts.data.AggregationImporter;
 import pl.adamborowski.medcharts.data.AggregationReader;
-import pl.adamborowski.medcharts.data.AggregationRenderer;
+import pl.adamborowski.medcharts.data.CacheFileManager;
 import pl.adamborowski.medcharts.data.SerieImporter;
 import pl.adamborowski.medcharts.data.SerieReader;
 import pl.adamborowski.medcharts.data.SerieRenderer;
@@ -22,12 +24,28 @@ import pl.adamborowski.medcharts.data.aggregationreader.ActReader;
 import pl.adamborowski.medcharts.data.aggregationrenderer.LineRenderer;
 import pl.adamborowski.medcharts.data.aggregationrenderer.MinMaxRenderer;
 import pl.adamborowski.medcharts.renderers.SpaceManager;
+import pl.adamborowski.utils.ParseUtil;
 
 /**
  *
  * @author adam
  */
 public class HierarchyBuilder {
+
+    public static SerieImporter buildSerieImporterFromJaxb(CacheFileManager cacheFileManager, Serie serie) {
+        SerieImporter serieImporter = new SerieImporter(cacheFileManager);
+        if (serie.getAggregations() != null) {
+            for (Aggregations.Aggregation aggregation : serie.getAggregations().getAggregation()) {
+                List<AggregationDescription.Type> types = ParseUtil.parseTypes(aggregation.getType());
+                for (AggregationDescription.Type type : types) {
+                    serieImporter.addAggregation(new AggregationDescription(type.name() + aggregation.getRange(), type, ParseUtil.parseRange(aggregation.getRange())));
+                }
+            }
+        }
+        final AggregationDescription actAggregationImporter = new AggregationDescription("act", AggregationDescription.Type.ACT, 0);
+        serieImporter.addAggregation(actAggregationImporter);
+        return serieImporter;
+    }
 
     public static SerieReader buildReaderHierarchyFromImporterHierarchy(SerieImporter importer) throws IOException {
         ArrayList<AggregationImporter> aggregations = importer.getAggregations();
@@ -44,9 +62,9 @@ public class HierarchyBuilder {
         return sr;
     }
 
-    public static SerieRenderer buildRendererHierarchyFromReaderHierarchy(SerieReader reader, SpaceManager sp, Assembly.Serie jaxb) {
+    public static SerieRenderer buildRendererHierarchyFromReaderHierarchy(SerieReader reader, SpaceManager sp) {
         Collection<AggregationReader> aggregations = reader.getAggregationReaders();
-        SerieRenderer sr = new SerieRenderer(reader, jaxb, sp);
+        SerieRenderer sr = new SerieRenderer(reader, sp);
         //collect min readers, max readers, and act reader to group by range
         HashMap<Integer, AggregationReader> minReaders = new HashMap<>();
         HashMap<Integer, AggregationReader> maxReaders = new HashMap<>();
@@ -69,7 +87,7 @@ public class HierarchyBuilder {
             AggregationReader maxReader = maxReaders.get(minReader.getRange());
             sr.addAggregationRenderer(minReader.getRange(), new MinMaxRenderer(sp, maxReader, minReader));
         }
-
+        System.out.println("num aggegation renderrers; "+minReaders.size());
         sr.initAutomation();
         return sr;
 

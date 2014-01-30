@@ -18,6 +18,8 @@ import javax.swing.SwingWorker;
 import javax.xml.bind.JAXBException;
 import pl.adamborowski.medcharts.assembly.AssemblyIO;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Overlay;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.assembly.reading.IDataReader;
 import pl.adamborowski.medcharts.renderers.RootRenderer;
 import pl.adamborowski.medcharts.renderers.OverlayRenderer;
@@ -159,7 +161,7 @@ public class AssemblyImporter extends SwingWorker<AssemblyImporter.Mapping, Impo
              *umieścić wszystkie importery w w kolejce oczekiwania
              */
             queue = new LinkedList<>();
-            for (Assembly.Serie serie : assembly.getSerie())
+            for (Serie serie : assembly.getSerie())
             {
                 MainImporter mainImporter = new MainImporter(this, serie);
 //                RootRenderer viewRenderer = new RootRenderer(mainImporter.getReader());
@@ -169,7 +171,7 @@ public class AssemblyImporter extends SwingWorker<AssemblyImporter.Mapping, Impo
                 map.put(serie, mainImporter.getReader());
                 queue.add(mainImporter);
                 addImporterToProgressIfImporting(mainImporter);
-                for (Assembly.Serie.Overlay overlay : serie.getOverlay())
+                for (Overlay overlay : serie.getOverlay())
                 {
                     OverlayImporter overlayImporter = new OverlayImporter(this, overlay, mainImporter);
 //                    OverlayRenderer overlayRenderer = new OverlayRenderer(overlayImporter.getReader());

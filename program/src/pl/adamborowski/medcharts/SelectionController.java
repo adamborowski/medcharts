@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import pl.adamborowski.medcharts.assembly.data.DataRange;
 import pl.adamborowski.medcharts.assembly.imporing.AssemblyImporter;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Selection;
 import pl.adamborowski.medcharts.renderers.SpaceManager;
 
 /**
@@ -36,9 +37,9 @@ import pl.adamborowski.medcharts.renderers.SpaceManager;
 public class SelectionController
 {
 
-    private static Map<Assembly.Selection, SelectionController> controllersForSelections = new HashMap<>();
+    private static Map<pl.adamborowski.medcharts.assembly.jaxb.Selection, SelectionController> controllersForSelections = new HashMap<>();
 
-    public static SelectionController getControllerForSelection(Assembly.Selection selection, SpaceManager spaceManager, Viewport viewport)
+    public static SelectionController getControllerForSelection(pl.adamborowski.medcharts.assembly.jaxb.Selection selection, SpaceManager spaceManager, Viewport viewport)
     {
         if (controllersForSelections.containsKey(selection))
         {
@@ -60,16 +61,16 @@ public class SelectionController
         controllersForSelections.clear();
     }
     //------------------------------------------------------------------------------------------
-    final private Assembly.Selection jaxbSelection;
+    final private pl.adamborowski.medcharts.assembly.jaxb.Selection jaxbSelection;
 
-    public Assembly.Selection getBinding()
+    public pl.adamborowski.medcharts.assembly.jaxb.Selection getBinding()
     {
         return jaxbSelection;
     }
     private final SpaceManager spaceManager;
     private final Viewport viewport;
 
-    public SelectionController(Assembly.Selection selection, SpaceManager spaceManager, Viewport viewport, AssemblyImporter importer)
+    public SelectionController(pl.adamborowski.medcharts.assembly.jaxb.Selection selection, SpaceManager spaceManager, Viewport viewport, AssemblyImporter importer)
     {
         this.jaxbSelection = selection;
         this.spaceManager = spaceManager;
@@ -122,7 +123,7 @@ public class SelectionController
 
     }
 
-    public static void serialize(List<SelectionItem> items, AssemblyImporter importer, Assembly.Selection selection)
+    public static void serialize(List<SelectionItem> items, AssemblyImporter importer, pl.adamborowski.medcharts.assembly.jaxb.Selection selection)
     {
         File myItemsFile = getSelectionFile(importer, selection);
 
@@ -190,7 +191,7 @@ public class SelectionController
         //updateSelections();
     }
 
-    public static File getSelectionFile(AssemblyImporter importer, Assembly.Selection selection)
+    public static File getSelectionFile(AssemblyImporter importer, pl.adamborowski.medcharts.assembly.jaxb.Selection selection)
     {
         return importer.getBinPath().resolve(selection.getId() + ".sel").toFile();
     }

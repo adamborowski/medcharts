@@ -25,9 +25,9 @@ public class CacheFileManager {
 //    public static final int CACHE_FILE_BUFFER_SIZE = 8 * 1024;
     public static final int CACHE_FILE_BUFFER_SIZE = 64 * 1024;
 
-    protected final Path binPath;
-    protected final Path sourceFilePath;
-    protected final String sourceFileName;
+    public final Path binPath;
+    public final Path sourceFilePath;
+    public final String sourceFileName;
     public final File sourceFile;
 
     public CacheFileManager(Path binPath, Path sourceFilePath) {

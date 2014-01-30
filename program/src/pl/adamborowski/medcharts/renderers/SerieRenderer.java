@@ -6,24 +6,25 @@ package pl.adamborowski.medcharts.renderers;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.text.DecimalFormat;
 import pl.adamborowski.medcharts.MedChartPreferences;
 import pl.adamborowski.medcharts.assembly.data.DataCollection;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Overlay;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.assembly.reading.IDataReader;
 import pl.adamborowski.medcharts.assembly.reading.MainReader;
+import pl.adamborowski.medcharts.assembly.reading.OverlayReader;
 import pl.adamborowski.utils.DateUtil;
 import pl.adamborowski.utils.PaintUtil;
-import pl.adamborowski.utils.TimeUtil;
 import pl.adamborowski.utils.builders.HierarchyBuilder;
 
 /**
  *
  * @author test
  */
-public class SerieRenderer extends DataRendererBase<Float, Assembly.Serie, DataCollection.DataItem> {
+public class SerieRenderer extends DataRendererBase<Float, Serie, DataCollection.DataItem> {
 
     private int y;
     private int height;
@@ -40,20 +41,20 @@ public class SerieRenderer extends DataRendererBase<Float, Assembly.Serie, DataC
      * @param parent
      * @param binding
      */
-    public SerieRenderer(IDataReader reader, RendererBase parent, Assembly.Serie binding) {
+    public SerieRenderer(IDataReader reader, RendererBase parent, Serie binding) {
         super(reader, parent, binding);
         title = new LabelRenderer(binding.getTitle(), 10, 10);
         title.setForegroundColor(Color.decode(binding.getColor()));
 
         if (binding.getOverlay().isEmpty() == false) {
-            Assembly.Serie.Overlay ov = binding.getOverlay().get(0);
-            overlay = new OverlayRenderer(mapping.readerFor(ov), this, ov);
+            Overlay ov = binding.getOverlay().get(0);
+            overlay = new OverlayRenderer((OverlayReader) mapping.readerFor(ov), this, ov);
         }
         hintRenderer.setBackgroundColor(PaintUtil.createColor(0xfcfcfc, 0.94f));
         hintRenderer.setForegroundColor(title.getForegroundColor());
         hintRenderer.setBorderColor(title.getBorderColor());
         hintRenderer.setRadius(6);
-        serieRenderer = HierarchyBuilder.buildRendererHierarchyFromReaderHierarchy(((MainReader) this.reader).serieReader, sp(), binding);
+        serieRenderer = HierarchyBuilder.buildRendererHierarchyFromReaderHierarchy(((MainReader) this.reader).serieReader, sp());
 //        this.aggregationRenderer=
 
     }
@@ -483,18 +484,14 @@ public class SerieRenderer extends DataRendererBase<Float, Assembly.Serie, DataC
     }
 
     @Override
-    protected Extremum calculateExtremum() {
-        extremum.max = - Float.MAX_VALUE;
+    public void calculateExtremum(DataRendererBase.Extremum extremum) {
+        this.extremum=extremum;
+        extremum.max = -Float.MAX_VALUE;
         extremum.min = Float.MAX_VALUE;
         serieRenderer.calculateExtremum(extremum);
         if (overlay != null) {
-            OverlayRenderer.Extremum oe = overlay.calculateExtremum();
-            extremum.min = Math.min(extremum.min, oe.min);
-            extremum.max = Math.max(extremum.max, oe.max);
-            oe.min = extremum.min;//POPRAWKI - globalizacja maxmodule
-            oe.max = extremum.max;
+            overlay.calculateExtremum(extremum);
         }
-        return extremum;
     }
 
     public IDataReader getReader() {

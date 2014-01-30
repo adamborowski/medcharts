@@ -8,15 +8,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import pl.adamborowski.medcharts.assembly.imporing.AssemblyImporter.Mapping;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 
 /**
  *
  * @author test
  */
-abstract class ViewRendererBase extends RendererBase<Assembly.Serie>
+abstract class ViewRendererBase extends RendererBase<Serie>
 {
 
-    public ViewRendererBase(Assembly.Serie binding, Mapping mapping)
+    public ViewRendererBase(Serie binding, Mapping mapping)
     {
         super(binding, mapping);
     }

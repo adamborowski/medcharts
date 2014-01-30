@@ -9,12 +9,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import pl.adamborowski.medcharts.assembly.data.DataSequence;
+import pl.adamborowski.medcharts.assembly.jaxb.Aggregations;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.assembly.reading.MainReader;
 import pl.adamborowski.medcharts.data.AggregationDescription;
 import pl.adamborowski.medcharts.data.SerieImporter;
 import pl.adamborowski.medcharts.data.SerieReader;
 import pl.adamborowski.utils.ParseUtil;
+import pl.adamborowski.utils.builders.HierarchyBuilder;
 import sun.misc.FloatingDecimal;
 
 /*
@@ -37,23 +40,13 @@ public final class MainImporter extends ImporterBase<MainReader> {
 
     public static final int MAX_SEQUENCE_SIZE = 10;
     public final SerieImporter serieImporter;
-    private final Assembly.Serie serie;
+    public final Serie serie;
 
-    public MainImporter(AssemblyImporter importer, Assembly.Serie serie) throws IOException {
+    public MainImporter(AssemblyImporter importer, Serie serie) throws IOException {
         super(importer, importer.getSourceFile(serie.getSource()));
         setReader(new MainReader(this));
         this.serie = serie;
-        this.serieImporter = new SerieImporter(cacheFileManager);
-        if (serie.getAggregations() != null) {
-            for (Assembly.Serie.Aggregations.Aggregation aggregation : serie.getAggregations().getAggregation()) {
-                List<AggregationDescription.Type> types = ParseUtil.parseTypes(aggregation.getType());
-                for (AggregationDescription.Type type : types) {
-                    serieImporter.addAggregation(new AggregationDescription(type.name() + aggregation.getRange(), type, ParseUtil.parseRange(aggregation.getRange())));
-                }
-            }
-        }
-        final AggregationDescription actAggregationImporter = new AggregationDescription("act", AggregationDescription.Type.ACT, 0);
-        serieImporter.addAggregation(actAggregationImporter);
+        this.serieImporter = HierarchyBuilder.buildSerieImporterFromJaxb(cacheFileManager, serie);
         isCacheValid = serieImporter.isCacheValid();
     }
     ///////////////////////
@@ -67,7 +60,6 @@ public final class MainImporter extends ImporterBase<MainReader> {
         for (int i = 0; i < NUM_ILLEGAL_LINES; i++) {
             sourceStream.readLine();
         }
-        float maxModule = 0;
         float sampleValue;
         ArrayList<Float> values = checkSequence();
         //przygotuj agregacje
@@ -76,7 +68,6 @@ public final class MainImporter extends ImporterBase<MainReader> {
         long sampleTime = sequence.getStart();
         //wpisz wartości, które były testowane do pomiaru sekwencji
         for (Float testValue : values) {
-            maxModule = Math.max(maxModule, Math.abs(testValue));
             serieImporter.process(sampleTime, testValue);
             sampleTime = sequence.nextTime(sampleTime);
         }
@@ -85,7 +76,6 @@ public final class MainImporter extends ImporterBase<MainReader> {
         while ((line = sourceStream.readLine()) != null) {
             try {
                 sampleValue = Float.parseFloat(line.substring(line.indexOf("\t") + 1));
-                maxModule = Math.max(maxModule, Math.abs(sampleValue));
             } catch (NumberFormatException ex) {
                 sampleValue = Float.NaN;
             }

@@ -8,7 +8,6 @@ import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
 import pl.adamborowski.medcharts.renderers.DataRendererBase;
 import pl.adamborowski.medcharts.renderers.SpaceManager;
 
@@ -21,13 +20,11 @@ public class SerieRenderer {
     private AggregationRenderer currentAggregationRenderer;
     private final SerieReader reader;
     private final Map<Integer, AggregationRenderer> aggregationRenderers = new HashMap<>();//key is aggregation range
-    private final Assembly.Serie jaxb;
     private SpaceManager sp;
     private int goodRange;
 
-    public SerieRenderer(SerieReader reader, Assembly.Serie jaxb, SpaceManager sp) {
+    public SerieRenderer(SerieReader reader,  SpaceManager sp) {
         this.reader = reader;
-        this.jaxb = jaxb;
         this.sp = sp;
     }
 

@@ -15,14 +15,18 @@ import pl.adamborowski.medcharts.assembly.imporing.ImporterBase;
 import pl.adamborowski.medcharts.assembly.imporing.MainImporter;
 import pl.adamborowski.medcharts.assembly.imporing.OverlayImporter;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Overlay;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
+import pl.adamborowski.medcharts.data.SerieImporter;
+import pl.adamborowski.medcharts.data.SerieReader;
 import pl.adamborowski.medcharts.renderers.SpaceManager;
+import pl.adamborowski.utils.builders.HierarchyBuilder;
 
 /**
  *
  * @author test
  */
-public class OverlayReader implements IDataReader
-{
+public class OverlayReader implements IDataReader {
 
     private static final int FRAME_START = Integer.SIZE / Byte.SIZE + ImporterBase.HEADER_SIZE;//na początku jest ilość linii
     private static final int FRAME_BYTES_Y = Float.SIZE / Byte.SIZE;
@@ -34,30 +38,30 @@ public class OverlayReader implements IDataReader
     private long lastTime;
     private DataSequence sequence;
     private int numLines;
-    private final Assembly.Serie.Overlay binding;
+    private final Overlay binding;
+    public ArrayList<SerieReader> serieReaders = new ArrayList<SerieReader>();
 
-    public Assembly.Serie.Overlay getBinding()
-    {
+    public Overlay getBinding() {
         return binding;
     }
 
-    public int getNumLines()
-    {
+    public int getNumLines() {
         return numLines;
     }
     private final OverlayImporter overlayImporter;
 
-    public OverlayReader(MainImporter mainImporter, OverlayImporter overlayImporter, Assembly.Serie.Overlay binding)
-    {
+    public OverlayReader(MainImporter mainImporter, OverlayImporter overlayImporter, Overlay binding) {
         this.binding = binding;
         this.mainImporter = mainImporter;
         this.overlayImporter = overlayImporter;
     }
 
     @Override
-    public void initialize() throws IOException
-    {
-
+    public void initialize() throws IOException {
+        //TODO: serieReaders = for()...  HierarchyBuilder.buildReaderHierarchyFromImporterHierarchy(this.importer.serieImporter);
+        for (SerieImporter overlaySerieImporter : overlayImporter.serieImporters) {
+            this.serieReaders.add(HierarchyBuilder.buildReaderHierarchyFromImporterHierarchy(overlaySerieImporter));
+        }
         firstTime = mainImporter.getReader().getStart();
         lastTime = mainImporter.getReader().getEnd();
         sequence = mainImporter.getReader().getSequence();
@@ -69,25 +73,21 @@ public class OverlayReader implements IDataReader
     }
 
     @Override
-    public OverlayLinesCollection getData(SpaceManager sp, int fromPixel, int toPixel) throws IOException
-    {
+    public OverlayLinesCollection getData(SpaceManager sp, int fromPixel, int toPixel) throws IOException {
         final int rangeCount = toPixel - fromPixel + 1 + 1;
 
         OverlayLinesCollection.Multipoint[] yData = new OverlayLinesCollection.Multipoint[rangeCount];
         long[] xData = new long[rangeCount];
         int j;
         int counter = 0;
-        for (int p = fromPixel; p <= toPixel; p++)
-        {
-            if (counter == rangeCount)
-            {
+        for (int p = fromPixel; p <= toPixel; p++) {
+            if (counter == rangeCount) {
                 //error;
                 break;
             }
             yData[counter] = new OverlayLinesCollection.Multipoint(numLines);
             xData[counter] = sequence.toTime(moveTo(sp.toDataX(p)));
-            for (j = 0; j < numLines; j++)
-            {
+            for (j = 0; j < numLines; j++) {
                 yData[counter].linePoints[j] = raf.readFloat();
             }
             counter++;
@@ -97,8 +97,7 @@ public class OverlayReader implements IDataReader
         moveTo(lastProbeTime);
         yData[counter - 1] = new OverlayLinesCollection.Multipoint(numLines);
         xData[counter - 1] = lastProbeTime;
-        for (j = 0; j < numLines; j++)
-        {
+        for (j = 0; j < numLines; j++) {
             yData[counter - 1].linePoints[j] = raf.readFloat();
         }
 //        for (int i = 0; i < rangeCount; i++)
@@ -120,10 +119,8 @@ public class OverlayReader implements IDataReader
      * @return probe index of x
      * @throws IOException
      */
-    public int moveTo(long x) throws IOException
-    {
-        if (x > lastTime)
-        {
+    public int moveTo(long x) throws IOException {
+        if (x > lastTime) {
             x = lastTime;
         }
         final int probeIndex = sequence.toProbeIndex(x);
@@ -132,20 +129,16 @@ public class OverlayReader implements IDataReader
         return probeIndex;
     }
 
-    public ArrayList<Mask> getMasks()
-    {
+    public ArrayList<Mask> getMasks() {
         return masks;
     }
 
-    private void readMasks() throws IOException
-    {
+    private void readMasks() throws IOException {
         //najpierw odczytaj ilość różnych masek
         int numMasks = masksInput.readInt();
         masks = new ArrayList<>(numMasks);
-        for (int i = 0; i < numMasks; i++)
-        {
-            if (binding.getMask().get(i).getImportToSelection() != null)
-            {
+        for (int i = 0; i < numMasks; i++) {
+            if (binding.getMask().get(i).getImportToSelection() != null) {
                 continue; // nie czytamy, gdy jest zaimportowany do selection
             }
             int numItems = masksInput.readInt();
@@ -153,8 +146,7 @@ public class OverlayReader implements IDataReader
 
             masks.add(mask);
 
-            for (int j = 0; j < numItems; j++)
-            {
+            for (int j = 0; j < numItems; j++) {
                 mask.addItem(masksInput.readLong(), masksInput.readLong());
             }
         }
@@ -162,20 +154,17 @@ public class OverlayReader implements IDataReader
     }
 
     @Override
-    public long getStart()
-    {
+    public long getStart() {
         return firstTime;
     }
 
     @Override
-    public long getEnd()
-    {
+    public long getEnd() {
         return lastTime;
     }
 
     @Override
-    public DataSequence getSequence()
-    {
+    public DataSequence getSequence() {
         return sequence;
     }
 }

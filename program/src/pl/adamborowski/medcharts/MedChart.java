@@ -29,6 +29,8 @@ import pl.adamborowski.medcharts.assembly.imporing.AssemblyImporter;
 import pl.adamborowski.medcharts.assembly.imporing.AssemblyImporter.Mapping;
 import pl.adamborowski.medcharts.assembly.imporing.IImportListener;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Selection;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.assembly.reading.IDataReader;
 import pl.adamborowski.medcharts.renderers.RootRenderer;
 import pl.adamborowski.medcharts.usercontrol.KeyboardController;
@@ -335,7 +337,7 @@ public class MedChart extends JPanel implements IImportListener<Mapping>, Action
         chartsPanel.removeAll();
         viewports = new ArrayList<>(mapping.getAssembly().getSerie().size());
         charts = new LinkedList<>();
-        for (Assembly.Serie serie : mapping.getAssembly().getSerie())
+        for (Serie serie : mapping.getAssembly().getSerie())
         {
             Viewport viewport = new Viewport(this, serie, mapping);
 
@@ -593,7 +595,7 @@ public class MedChart extends JPanel implements IImportListener<Mapping>, Action
         }
         exportMenu.removeAll();
         int i = 0;
-        for (Assembly.Selection selection : assembly.getSelection())
+        for (Selection selection : assembly.getSelection())
         {
             i++;
             JMenuItem m = new JMenuItem(selection.getTitle());
@@ -655,10 +657,10 @@ public class MedChart extends JPanel implements IImportListener<Mapping>, Action
     {
 
         private final Viewport viewport;
-        private final Assembly.Selection selection;
+        private final Selection selection;
         private final SelectionController selectionController;
 
-        public ExportAction(Viewport viewport, Assembly.Selection selection)
+        public ExportAction(Viewport viewport, Selection selection)
         {
             this.viewport = viewport;
             this.selection = selection;

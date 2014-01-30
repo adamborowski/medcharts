@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import pl.adamborowski.medcharts.assembly.imporing.AssemblyImporter;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.assembly.jaxb.Serie;
 import pl.adamborowski.medcharts.renderers.DataSelectionRenderer;
 import pl.adamborowski.medcharts.renderers.SpaceManager;
 import pl.adamborowski.medcharts.renderers.RootRenderer;
@@ -59,10 +60,10 @@ public class Viewport extends JPanel
     private BehaviourController mouseController;
     private final MedChart medChart;
     private SelectionController selectionController;
-    private final Assembly.Serie binding;
+    private final Serie binding;
 
     @SuppressWarnings("LeakingThisInConstructor")
-    public Viewport(MedChart medChart, Assembly.Serie binding, AssemblyImporter.Mapping mapping)
+    public Viewport(MedChart medChart, Serie binding, AssemblyImporter.Mapping mapping)
     {
         this.medChart = medChart;
         this.binding = binding;
