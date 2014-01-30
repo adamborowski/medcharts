@@ -55,9 +55,9 @@ public class SerieImporter {
         }
     }
 
-    public void process(float currentValue) throws IOException {
+    public void process(long time, float currentValue) throws IOException {
         for (AggregationImporter a : aggregations) {
-            a.process(currentValue);
+            a.process(time, currentValue);
         }
         if (currentValue > config.maxValue) {
             config.maxValue = currentValue;

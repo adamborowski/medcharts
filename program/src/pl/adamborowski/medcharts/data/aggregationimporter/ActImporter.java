@@ -21,7 +21,7 @@ public class ActImporter extends AggregationImporter {
     }
 
     @Override
-    public void process(float value) throws IOException {
+    public void process(long time, float value) throws IOException {
         output.writeFloat(value);//we not need to process-and-flush step, write all vaues into array
         config.numSamples++;
     }

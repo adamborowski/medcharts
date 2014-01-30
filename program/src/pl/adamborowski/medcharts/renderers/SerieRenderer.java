@@ -113,7 +113,6 @@ public class SerieRenderer extends DataRendererBase<Float, Assembly.Serie, DataC
 //        {
 //            mouseX = 0;
 //        }
-        int newX;
         //
         serieRenderer.render(g);
 //                                                                                                for (DataCollection.DataItem i : currentScope.data) {
@@ -485,16 +484,9 @@ public class SerieRenderer extends DataRendererBase<Float, Assembly.Serie, DataC
 
     @Override
     protected Extremum calculateExtremum() {
-        extremum.max = Float.MIN_VALUE;
+        extremum.max = - Float.MAX_VALUE;
         extremum.min = Float.MAX_VALUE;
-        if (currentScope.data != null) {
-            for (DataCollection.DataItem i : currentScope.data) {
-                if (i != null) {
-                    extremum.max = Math.max(extremum.max, i.y);
-                    extremum.min = Math.min(extremum.min, i.y);
-                }
-            }
-        }
+        serieRenderer.calculateExtremum(extremum);
         if (overlay != null) {
             OverlayRenderer.Extremum oe = overlay.calculateExtremum();
             extremum.min = Math.min(extremum.min, oe.min);
@@ -535,10 +527,10 @@ public class SerieRenderer extends DataRendererBase<Float, Assembly.Serie, DataC
 
     @Override
     public void gatherData() {
-        super.gatherData(); //To change body of generated methods, choose Tools | Templates.
-        if (overlay != null) {
-
-            overlay.gatherData();
-        }
+//        super.gatherData(); //To change body of generated methods, choose Tools | Templates.
+//        if (overlay != null) {
+//
+//            overlay.gatherData();
+//        }
     }
 }

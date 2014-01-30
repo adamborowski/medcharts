@@ -56,30 +56,26 @@ public abstract class AggregationImporter {
     public final CacheFileManager cacheFileManager;
     protected ObjectOutputStream output;
 
-    private int aggregationSize;
-    private int currentAggregationSize = 0;
     protected final AggregationConfig config = new AggregationConfig();
 
     public AggregationImporter(AggregationDescription ad, CacheFileManager cacheFileManager) {
         this.ad = ad;
-        config.ad=ad;
+        config.ad = ad;
         this.cacheFileManager = cacheFileManager;
     }
 
     public AggregationReader createReader() throws IOException {
         return new AggregationReader(cacheFileManager.openCacheFile(getInfix(ad)), cacheFileManager.openCacheFile(getConfigInfix(ad)));
     }
+    private long flushTime;
 
-    public void process(float value) throws IOException {
-        processSample(value);
-        currentAggregationSize++;
-        if (currentAggregationSize == aggregationSize) {
-            //flushing
+    public void process(long time, float value) throws IOException {
+        if (time >= flushTime) {
             flush();
-            currentAggregationSize = 0;
             config.numSamples++;
-            //end of flushing
+            flushTime += config.ad.range;//all values will be aggregated after timerange
         }
+        processSample(value);
     }
 
     protected abstract void processSample(float value);
@@ -89,27 +85,20 @@ public abstract class AggregationImporter {
     public final void save() throws IOException {
         //flushing
         flush();
-        currentAggregationSize = 0;
         config.numSamples++;
         //end of flushing
         output.close();
         configOutput.writeObject(config);//last int is total number of samples
         configOutput.close();
-        System.out.println("Aggregation "+ad.name+": "+config.numSamples+" samples.");
+        System.out.println("Aggregation " + ad.name + ": " + config.numSamples + " samples.");
     }
 
     public final void begin(DataSequence ds) throws IOException {
         ad.startTime = ds.getStart();
         output = cacheFileManager.createCacheFile(getInfix(ad));
         configOutput = cacheFileManager.createCacheFile(getConfigInfix(ad));
-        if (ad.range > 0)//ad.range=0 where ACT
-        {
-            aggregationSize = (int) ((float) ad.range / ds.getSequenceLength() * ds.getSequenceCount());
-            if (aggregationSize < 1) {
-                aggregationSize = 1;
-            }
-        }
-        config.sequence=ds;
+        config.sequence = ds;
+        flushTime = config.sequence.getStart() + config.ad.range;//initially set first flush time
     }
 
     boolean isCacheValid() {
@@ -123,12 +112,12 @@ public abstract class AggregationImporter {
         public int numSamples = 0;
         public DataSequence sequence;
     }
-    
-    public ObjectInputStream openCacheFile() throws IOException{
+
+    public ObjectInputStream openCacheFile() throws IOException {
         return cacheFileManager.openCacheFile(getInfix(ad));
     }
-    
-    public ObjectInputStream openCacheConfigFile() throws IOException{
+
+    public ObjectInputStream openCacheConfigFile() throws IOException {
         return cacheFileManager.openCacheFile(getConfigInfix(ad));
     }
 }

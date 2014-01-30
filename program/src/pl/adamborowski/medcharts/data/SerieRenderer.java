@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import pl.adamborowski.medcharts.assembly.jaxb.Assembly;
+import pl.adamborowski.medcharts.renderers.DataRendererBase;
 import pl.adamborowski.medcharts.renderers.SpaceManager;
 
 /**
@@ -19,9 +20,10 @@ public class SerieRenderer {
 
     private AggregationRenderer currentAggregationRenderer;
     private final SerieReader reader;
-    private final Map<AggregationReader, AggregationRenderer> aggregationRenderers = new HashMap<>();
+    private final Map<Integer, AggregationRenderer> aggregationRenderers = new HashMap<>();//key is aggregation range
     private final Assembly.Serie jaxb;
     private SpaceManager sp;
+    private int goodRange;
 
     public SerieRenderer(SerieReader reader, Assembly.Serie jaxb, SpaceManager sp) {
         this.reader = reader;
@@ -29,19 +31,15 @@ public class SerieRenderer {
         this.sp = sp;
     }
 
-    public void addAggregationRenderer(AggregationRenderer aggregationRenderer) {
-        this.aggregationRenderers.put(aggregationRenderer.reader, aggregationRenderer);
+    public void addAggregationRenderer(int range, AggregationRenderer aggregationRenderer) {
+        this.aggregationRenderers.put(range, aggregationRenderer);
 
     }
 
     public void render(Graphics2D g) {
-        float scaleX = sp.getScaleX();
-        int goodRange = getBestRange(scaleX);
-        System.out.println("scaleX: " + scaleX + ", goodRange:" + goodRange);
-        final AggregationReader aggregationReader = reader.getAggregationReader(goodRange, goodRange == -1 ? AggregationDescription.Type.ACT : AggregationDescription.Type.MAX);
-        System.out.println("aggregation: " + aggregationReader.ad.name);
-        currentAggregationRenderer = aggregationRenderers.get(aggregationReader);//todo test
+       //uwaga! calculateExtremum ma być wywołane tuż przed.
         currentAggregationRenderer.render(g);
+
     }
 
     int[] ranges;
@@ -93,6 +91,19 @@ public class SerieRenderer {
 //        }
 
         throw new RuntimeException("get best range exception");
+
+    }
+
+    public void calculateExtremum(DataRendererBase.Extremum extremum) {
+         float scaleX = sp.getScaleX();
+        int lastGoodRange = goodRange;
+        this.goodRange = getBestRange(scaleX);
+        currentAggregationRenderer = aggregationRenderers.get(goodRange);//todo test
+
+        if (goodRange != lastGoodRange) {
+//            System.out.println("scaleX: " + scaleX + ", goodRange:" + goodRange);
+        }
+        currentAggregationRenderer.calculateExtremum(extremum);
 
     }
 }

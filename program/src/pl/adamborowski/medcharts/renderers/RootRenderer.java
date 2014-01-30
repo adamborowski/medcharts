@@ -164,7 +164,7 @@ public final class RootRenderer extends ViewRendererBase
 //        TimeUtil.start("gather data");
         if (serieRenderer != null)
         {
-            serieRenderer.gatherData();
+//            serieRenderer.gatherData();
             serieRenderer.calculateExtremum();
             if (isAutoScaleY())
             {

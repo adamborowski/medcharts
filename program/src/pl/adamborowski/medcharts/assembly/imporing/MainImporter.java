@@ -68,27 +68,29 @@ public final class MainImporter extends ImporterBase<MainReader> {
             sourceStream.readLine();
         }
         float maxModule = 0;
-        float currentValue;
+        float sampleValue;
         ArrayList<Float> values = checkSequence();
         //przygotuj agregacje
         serieImporter.begin(sequence);
         //zapisz sekwencję do pliku
-
+        long sampleTime = sequence.getStart();
         //wpisz wartości, które były testowane do pomiaru sekwencji
         for (Float testValue : values) {
             maxModule = Math.max(maxModule, Math.abs(testValue));
-            serieImporter.process(testValue);
+            serieImporter.process(sampleTime, testValue);
+            sampleTime = sequence.nextTime(sampleTime);
         }
         //zapisz pozostałe próbki w wielkiej pętli
         long currentLine = values.size();
         while ((line = sourceStream.readLine()) != null) {
             try {
-                currentValue = Float.parseFloat(line.substring(line.indexOf("\t") + 1));
-                maxModule = Math.max(maxModule, Math.abs(currentValue));
+                sampleValue = Float.parseFloat(line.substring(line.indexOf("\t") + 1));
+                maxModule = Math.max(maxModule, Math.abs(sampleValue));
             } catch (NumberFormatException ex) {
-                currentValue = Float.NaN;
+                sampleValue = Float.NaN;
             }
-            serieImporter.process(currentValue);
+            serieImporter.process(sampleTime, sampleValue);
+            sampleTime = sequence.nextTime(sampleTime);
             setLineProgress(++currentLine);
         }
         //zapisz maksymalny moduł wartości
